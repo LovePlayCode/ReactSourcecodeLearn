@@ -16,5 +16,6 @@
     "object-assign": "^4.1.1",
     "typescript": "^4.3.2",
     "vite": "^2.5.1"
-  }
+  },
+  "repository": "https://github.com/BetaSu/react18-demo.git"
 }

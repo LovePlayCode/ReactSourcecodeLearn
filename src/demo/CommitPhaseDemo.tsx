@@ -1,32 +1,34 @@
-import React, {useState, Component, useLayoutEffect} from 'react';
-import {bindHook, utils} from 'log';
+import React, { useState, Component, useLayoutEffect } from "react";
+import { bindHook, utils } from "log";
 
-const {log, COLOR: {SCHEDULE_COLOR, RENDER_COLOR, COMMIT_COLOR}} = utils;
+const {
+  log,
+  COLOR: { SCHEDULE_COLOR, RENDER_COLOR, COMMIT_COLOR },
+} = utils;
 
-bindHook('commitBeforeMutationEffectsOnFiber', (fiber) => {
+bindHook("commitBeforeMutationEffectsOnFiber", (fiber) => {
   log(COMMIT_COLOR, `commit BeforeMutationEffects`, fiber);
-})  
+});
 
-bindHook('commitMutationEffectsOnFiber', (fiber) => {
+bindHook("commitMutationEffectsOnFiber", (fiber) => {
   log(COMMIT_COLOR, `commit MutationEffects`, fiber);
-})  
+});
 
-bindHook('commitLayoutEffectOnFiber', (fiber) => {
+bindHook("commitLayoutEffectOnFiber", (fiber) => {
   log(COMMIT_COLOR, `commit LayoutEffect`, fiber);
-}) 
+});
 
-bindHook('commitUpdateQueue', (fiber, effects) => {
+bindHook("commitUpdateQueue", (fiber, effects) => {
   log(COMMIT_COLOR, `commit UpdateQueue`, effects);
-})  
+});
 
-bindHook('updateDOMProperties', (dom, type) => {
+bindHook("updateDOMProperties", (dom, type) => {
   log(COMMIT_COLOR, `更新DOM属性 ${type}`, dom);
-})
+});
 
-bindHook('updateDOM', (fiber, type) => {
+bindHook("updateDOM", (fiber, type) => {
   log(COMMIT_COLOR, `更新DOM ${type}`, fiber);
-})
-
+});
 
 // 用于调试 commit阶段 工作流程的Demo
 export default () => {
@@ -38,31 +40,45 @@ export default () => {
   }
 
   return (
-    <div onClick={() => updateNum(num + 1)} style={{color: `#${num}${num}${num}`}} title={num + ''}>
-      <SomeClassComponent/>
+    <div
+      onClick={() => updateNum(num + 1)}
+      style={{ color: `#${num}${num}${num}` }}
+      title={num + ""}
+    >
       <div>
-        <SomeFunctionComponent/>
+        <div>1</div>
+        <div>2</div>
+        <div>3</div>
+        <div>4</div>
+        <div>5</div>
+      </div>
+      <SomeClassComponent />
+      <div>
+        <SomeFunctionComponent />
       </div>
     </div>
-  )
-}
+  );
+};
 
 class SomeClassComponent extends Component {
   state = {
-    num: 0
-  }
+    num: 0,
+  };
   componentWillUnmount() {
-    console.log('SomeClassComponent will unmount');
+    console.log("SomeClassComponent will unmount");
   }
   onClick = (e: React.MouseEvent<HTMLParagraphElement>) => {
     // 用于查看 updateQueue 的处理
     e.stopPropagation();
-    this.setState({
-      num: this.state.num + 1
-    }, () => {
-      console.log('class cpn callback!');
-    })
-  }
+    this.setState(
+      {
+        num: this.state.num + 1,
+      },
+      () => {
+        console.log("class cpn callback!");
+      }
+    );
+  };
   render() {
     return <p onClick={this.onClick}>some class component {this.state.num}</p>;
   }
@@ -70,7 +86,7 @@ class SomeClassComponent extends Component {
 
 function SomeFunctionComponent() {
   useLayoutEffect(() => {
-    return () => console.log('SomeFunctionComponent will unmount');
-  }, [])
+    return () => console.log("SomeFunctionComponent will unmount");
+  }, []);
   return <p>some function component</p>;
 }
