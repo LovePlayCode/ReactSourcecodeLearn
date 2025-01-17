@@ -24,7 +24,7 @@ if (process.env.NODE_ENV !== "production") {
     var React = require("react");
     var _assign = require("object-assign");
     var Scheduler = require("scheduler");
-    /*KaSong*/ var { logHook, logLibraryMethod } = require("log");
+    /*KaSong*/ var { logHook, logLibraryMethod, debug } = require("log");
 
     /*KaSong*/ logLibraryMethod(getComponentNameFromFiber);
 
@@ -31099,6 +31099,25 @@ if (process.env.NODE_ENV !== "production") {
       // The current, flushed, state of this fiber is the alternate. Ideally
       // nothing should rely on this, but relying on it here means that we don't
       // need an additional field on the work in progress.
+
+      /**
+       * "The current, flushed, state of this fiber is the alternate."
+
+          Fiber 结构：在 React Fiber 架构中，每个 Fiber 节点代表一个组件的部分。每个 Fiber 节点通常会有两个状态：
+          当前状态 (current)：表示已经渲染到屏幕上的状态。
+          工作中状态 (workInProgress)：表示正在处理的状态，也就是对该 Fiber 节点进行变更时使用的状态。
+          备用状态 (alternate)：每个 Fiber 节点还可以有一个备用节点（alternate），用于实现更复杂的功能，如时间分片和回退。
+          这里的意思是，当前已经被处理并且刷新的 Fiber 状态被称为备用状态，从而暗示当前示例的状态是最近一次更新后的状态。
+          "Ideally nothing should rely on this..."
+
+          这部分说明了对于这种设计的理想状态。在理想情况下，开发者或代码不应该依赖于这种状态，因为它可能在细节或实现上发生变化。
+          例如，当 React 的调度或更新算法发生更改时，依赖于这类状态的信息可能会引起潜在错误。
+          "...but relying on it here means that we don't need an additional field on the work in progress."
+
+          这部分的意思是，虽然不推荐依赖这个状态，但为了简化工作中的状态 (work in progress)，我们在这里采取了一个权宜之计（"relying on it here"）。
+          也就是说，采用这种方式可以避免在工作中的 Fiber 节点上增加额外的字段，从而简化了数据结构的复杂性。这可能提高性能，因为减少存储和处理的复杂性有助于优化内存使用或提高运行效率。
+
+       */
       var current = unitOfWork.alternate;
       setCurrentFiber(unitOfWork);
       var next;
@@ -34072,7 +34091,7 @@ if (process.env.NODE_ENV !== "production") {
           }
         }
       }
-
+      debugger;
       updateContainer(children, root, null, null);
     };
 
