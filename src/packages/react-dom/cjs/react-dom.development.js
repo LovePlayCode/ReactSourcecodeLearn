@@ -26608,7 +26608,7 @@ if (process.env.NODE_ENV !== "production") {
     /**
      * @param {*} current 当前页面使用的 Fiber
      * @param {*} workInProgress 当前正在构造的 Fiber 结构
-     * @param {*} renderLanes 
+     * @param {*} renderLanes
      */
     function beginWork(current, workInProgress, renderLanes) {
       console.log("beginWork==", current, workInProgress);
@@ -31096,6 +31096,7 @@ if (process.env.NODE_ENV !== "production") {
 
     function workLoopConcurrent() {
       // Perform work until Scheduler asks us to yield
+      // 对时间进行调度，每次走完之后需要判断是否有剩余时间
       while (workInProgress !== null && !shouldYield()) {
         performUnitOfWork(workInProgress);
       }
