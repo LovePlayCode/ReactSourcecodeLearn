@@ -17842,6 +17842,7 @@ if (process.env.NODE_ENV !== "production") {
       function placeSingleChild(newFiber) {
         // This is simpler for the single child case. We only need to do a
         // placement for inserting new children.
+        // 如果是一个新节点，追踪他的副作用
         if (shouldTrackSideEffects && newFiber.alternate === null) {
           newFiber.flags |= Placement;
         }
@@ -26604,6 +26605,11 @@ if (process.env.NODE_ENV !== "production") {
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
 
+    /**
+     * @param {*} current 当前页面使用的 Fiber
+     * @param {*} workInProgress 当前正在构造的 Fiber 结构
+     * @param {*} renderLanes 
+     */
     function beginWork(current, workInProgress, renderLanes) {
       console.log("beginWork==", current, workInProgress);
       {

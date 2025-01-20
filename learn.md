@@ -1645,8 +1645,6 @@ function createInstance(
 }
 ```
 
-最后有一个 appendAllChildren 将创建的实例添加到对应的位置，如果当前元素是一个父元素，那么需要将下面创建的真实子元素挂载到父元素上
-
 ```js
 appendAllChildren = function (
   parent,
@@ -1686,6 +1684,48 @@ appendAllChildren = function (
 };
 ```
 
+最后有一个 appendAllChildren 将创建的实例添加到对应的位置，如果当前元素是一个父元素，那么需要将下面创建的真实子元素挂载到父元素上。 作用: 把他所有孩子级的 DOM 节点通过 appendChild 收集起来。
+
+```js
+function bubbleProperties(completedWork: Fiber) {
+  const didBailout =
+    completedWork.alternate !== null &&
+    completedWork.alternate.child === completedWork.child; // 判断是否发生了回退
+
+  let newChildLanes = NoLanes;
+  let subtreeFlags = NoFlags;
+
+  if (!didBailout) {
+    if ((completedWork.mode & ProfileMode) !== NoMode) {
+      let actualDuration = completedWork.actualDuration;
+      let treeBaseDuration = ((completedWork.selfBaseDuration: any): number);
+      let child = completedWork.child;
+      while (child !== null) {
+        newChildLanes = mergeLanes(
+          newChildLanes,
+          mergeLanes(child.lanes, child.childLanes),
+        ); // 收集lanes
+        subtreeFlags |= child.subtreeFlags; // 将子节点收集的flags记录起来
+        subtreeFlags |= child.flags; // 以及子节点本身的flags
+        actualDuration += child.actualDuration; // actualDuration也进行累加
+        treeBaseDuration += child.treeBaseDuration; // treeBaseDuration进行累加
+        child = child.sibling; // 通过while+sibling找完同级子节点
+      }
+      // 收集完进行赋值
+      completedWork.actualDuration = actualDuration;
+      completedWork.treeBaseDuration = treeBaseDuration;
+    } else {...}
+    }
+    completedWork.subtreeFlags |= subtreeFlags; // 收集完进行赋值
+  } else {....}
+  completedWork.childLanes = newChildLanes;
+  return didBailout;
+}
+
+```
+
+bubbleProperties，作用: 收集子节点的 lanes 和 flags，然后累加对应的 actualDuration 和 treeBaseDuration. 主要是收集到 subtreeFlags 上。可以看源码
+
 假设我们 App 组件的构成是这样的
 
 ```js
@@ -1706,3 +1746,7 @@ const Demo2 = () => {
 
 那我们的解析流程是这样的(同层解析):
 先去解析 div，将所有的 div 处理完成之后，会再去处理 Demo3
+
+下面看一下比较复杂的整个解析过程
+
+![alt text](image-1.png)
