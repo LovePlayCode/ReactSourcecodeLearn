@@ -18671,6 +18671,8 @@ if (process.env.NODE_ENV !== "production") {
         while (child !== null) {
           // TODO: If key === null and child.key === null, then this only applies to
           // the first item in the list.
+          // 判断当前 key 是否相同，如果 key 相同
+
           if (child.key === key) {
             var elementType = element.type;
 
@@ -18688,6 +18690,9 @@ if (process.env.NODE_ENV !== "production") {
                 return existing;
               }
             } else {
+              // 判断当前elementType是否相同，如果相同证明找到了目标节点，将旧节点的 fiber 都打上删除标记
+              // 复用当前节点，结束循环。
+              // 如果key相同  elementType 都不相同，全部删除即可。
               if (
                 child.elementType === elementType || // Keep this check inline so it only runs on the false path:
                 isCompatibleFamilyForHotReloading(child, element) || // Lazy types should reconcile their resolved type.
@@ -18718,6 +18723,7 @@ if (process.env.NODE_ENV !== "production") {
             deleteRemainingChildren(returnFiber, child);
             break;
           } else {
+            // 如果 key 不相同，删除当前节点，继续处理他的子节点
             deleteChild(returnFiber, child);
           }
 
