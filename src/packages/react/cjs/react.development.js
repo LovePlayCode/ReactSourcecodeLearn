@@ -1403,6 +1403,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     function createContext(defaultValue) {
+      debugger;
       // TODO: Second argument used to be an optional `calculateChangedBits`
       // function. Warn to reserve for future use?
       var context = {

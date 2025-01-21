@@ -1,7 +1,8 @@
-import React, { FC, useContext } from "react";
+import React, { FC, memo, useContext } from "react";
 import MyContext from "./demo";
 
 const User = () => {
+  console.log("user===");
   debugger;
   const { name, age } = useContext(MyContext);
   return (
@@ -11,4 +12,7 @@ const User = () => {
     </>
   );
 };
-export default User;
+export default memo(User, () => {
+  debugger;
+  return true;
+});

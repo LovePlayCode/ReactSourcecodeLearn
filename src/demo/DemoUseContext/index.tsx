@@ -5,6 +5,7 @@ import User from "./User";
 const DemoUseContext = () => {
   const [name, setName] = useState("谦男");
   const [age, setAge] = useState(20);
+  const [_, setCount] = useState(1);
   return (
     <>
       <MyContext.Provider value={{ name: name, age: age }}>
@@ -16,6 +17,13 @@ const DemoUseContext = () => {
         }}
       >
         更换名字
+      </button>
+      <button
+        onClick={() => {
+          setCount((cout) => cout + 1);
+        }}
+      >
+        更新
       </button>
     </>
   );

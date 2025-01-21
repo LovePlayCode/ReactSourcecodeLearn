@@ -14892,6 +14892,12 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    /**
+     *
+     * @param {*} workInProgress 当前正在构建的树
+     * @param {*} context createContext 创建的上下文
+     * @param {*} renderLanes 渲染赛道
+     */
     function propagateContextChange_eager(
       workInProgress,
       context,
@@ -14946,6 +14952,7 @@ if (process.env.NODE_ENV !== "production") {
                 }
               }
 
+              // 给当前 fiber 的 lanes 添加渲染 优先级，这样即使写了 memo，也会在检测的时候，进入renderWithHook
               fiber.lanes = mergeLanes(fiber.lanes, renderLanes);
               var alternate = fiber.alternate;
 
@@ -26228,6 +26235,7 @@ if (process.env.NODE_ENV !== "production") {
           } else {
             // The context value changed. Search for matching consumers and schedule
             // them to update.
+            // 生产者生产出新的数据，通知消费者进行更新，会将子树的 lanes 设置为 renderlanes
             propagateContextChange(workInProgress, context, renderLanes);
           }
         }
