@@ -1,5 +1,9 @@
 import React, { useEffect, useLayoutEffect, useState } from "react";
 function Demo3() {
+  useEffect(() => {
+    debugger;
+    console.log("谦男组件初始化...");
+  }, []);
   return <div>Hello谦男</div>;
 }
 

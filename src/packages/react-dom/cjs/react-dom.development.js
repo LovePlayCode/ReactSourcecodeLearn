@@ -31307,6 +31307,8 @@ if (process.env.NODE_ENV !== "production") {
         // no more pending effects.
         // TODO: Might be better if `flushPassiveEffects` did not automatically
         // flush synchronous work at the end, to avoid factoring hazards like this.
+
+        // commit之前处理一下副作用
         flushPassiveEffects();
       } while (rootWithPendingPassiveEffects !== null);
 
@@ -31562,6 +31564,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     function flushPassiveEffects() {
+      debugger;
       // Returns whether passive effects were flushed.
       // TODO: Combine this check with the one in flushPassiveEFfectsImpl. We should
       // probably just combine the two functions. I believe they were only separate
