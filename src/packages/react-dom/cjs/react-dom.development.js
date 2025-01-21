@@ -27223,6 +27223,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 安全的处理Destroy
     function safelyCallDestroy(current, nearestMountedAncestor, destroy) {
       try {
         destroy();
@@ -31627,7 +31628,9 @@ if (process.env.NODE_ENV !== "production") {
 
       /*KaSong*/ logHook("commitBegin", "有PassiveEffect需要处理", lanes, root);
 
+      // 处理卸载函数
       commitPassiveUnmountEffects(root.current);
+      // 处理副作用
       commitPassiveMountEffects(root, root.current); // TODO: Move to commitPassiveMountEffects
 
       {

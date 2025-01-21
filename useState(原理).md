@@ -349,3 +349,8 @@ function updateReducer(reducer, initialArg, init) {
 
 ![alt text](image-4.png)
 ![alt text](image-5.png)
+
+最后放一张镇宅图
+![alt text](image-6.png)
+
+可以看到 Fiber 通过 memoizedState 对 hook 对象进行了连接，hook 对象内部有一个 memoizedState 指向 useEffet 生成的副作用函数或计算出的 state

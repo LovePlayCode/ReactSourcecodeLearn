@@ -13,7 +13,7 @@ const Demo2 = () => {
   useEffect(() => {
     debugger;
     console.log("打印");
-  }, []);
+  }, [state]);
 
   useLayoutEffect(() => {
     console.log("打印useLayoutEffect");
