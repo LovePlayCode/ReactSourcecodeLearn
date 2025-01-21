@@ -31309,6 +31309,7 @@ if (process.env.NODE_ENV !== "production") {
         // flush synchronous work at the end, to avoid factoring hazards like this.
 
         // commit之前处理一下副作用
+        // 为保证下一次commit阶段执行前"本次commit阶段调度的 useEffect 均已执行，保证本次commit阶段执行时，不存在"还在调度，未执行的 useEffect"
         flushPassiveEffects();
       } while (rootWithPendingPassiveEffects !== null);
 
@@ -31380,6 +31381,10 @@ if (process.env.NODE_ENV !== "production") {
       ) {
         if (!rootDoesHavePassiveEffects) {
           rootDoesHavePassiveEffects = true;
+
+          // commit阶段结束后，scheduleCallback方法会执行回调函数内部的flushPassiveEffects方法
+          // 进入 useEffect 阶段,这里会通过 Schedule 生成一个新的任务，然后再下一轮事件循环去调用他。
+          // 第二个参数就是 callback。这里会将 callback 构造成一个 task 的对象，进行调度。
           scheduleCallback$1(NormalPriority, function () {
             flushPassiveEffects(); // This render triggered passive effects: release the root cache pool
             // *after* passive effects fire to avoid freeing a cache pool that may
