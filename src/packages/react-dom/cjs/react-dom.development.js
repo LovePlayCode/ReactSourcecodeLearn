@@ -6254,6 +6254,9 @@ if (process.env.NODE_ENV !== "production") {
       return mostRecentEventTime;
     }
 
+    /**
+     * 计算过期时间
+     */
     function computeExpirationTime(lane, currentTime) {
       switch (lane) {
         case SyncLane:
@@ -6434,6 +6437,7 @@ if (process.env.NODE_ENV !== "production") {
       return getHighestPriorityLane(lanes);
     }
 
+    // 找到前导 0，进行运算
     function pickArbitraryLaneIndex(lanes) {
       return 31 - clz32(lanes);
     }
@@ -19375,6 +19379,8 @@ if (process.env.NODE_ENV !== "production") {
       nextRenderLanes
     ) {
       renderLanes = nextRenderLanes;
+
+      // 这里进行了当前Fiber 节点的赋值，方便在 useState 的时候进行节点的绑定(将 hook 节点绑定到 Fiber 对象上)。
       currentlyRenderingFiber$1 = workInProgress;
 
       {
@@ -19400,6 +19406,7 @@ if (process.env.NODE_ENV !== "production") {
       // so memoizedState would be null during updates and mounts.
 
       {
+        // 这里进行了赋值，如果是初始化阶段，ReactCurrentDispatcher$1.current为HooksDispatcherOnUpdateInDEV，如果是更新阶段，ReactCurrentDispatcher$1.current为HooksDispatcherOnMountInDEV
         if (current !== null && current.memoizedState !== null) {
           ReactCurrentDispatcher$1.current = HooksDispatcherOnUpdateInDEV;
         } else if (hookTypesDev !== null) {
@@ -19701,6 +19708,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     function updateReducer(reducer, initialArg, init) {
+      // 拿到当前的 hook 对象，该对象可能是根据current树 hook 生成的。也可能是直接复用的。
       var hook = updateWorkInProgressHook();
       var queue = hook.queue;
 
@@ -19722,6 +19730,8 @@ if (process.env.NODE_ENV !== "production") {
         // We'll add them to the base queue.
         if (baseQueue !== null) {
           // Merge the pending queue and the base queue.
+
+          // 将baseQueue和pendingQueue连接起来
           var baseFirst = baseQueue.next;
           var pendingFirst = pendingQueue.next;
           baseQueue.next = pendingFirst;
@@ -19739,6 +19749,7 @@ if (process.env.NODE_ENV !== "production") {
           }
         }
 
+        // 如果 baseQueue 为空，将pendingQueue赋值给baseQueue
         current.baseQueue = baseQueue = pendingQueue;
         queue.pending = null;
       }
@@ -20691,6 +20702,8 @@ if (process.env.NODE_ENV !== "production") {
       }
 
       var lane = requestUpdateLane(fiber);
+
+      // 生成一个 update 对象
       var update = {
         lane: lane,
         action: action,
@@ -20699,6 +20712,7 @@ if (process.env.NODE_ENV !== "production") {
         next: null,
       };
 
+      // 判断是否在更新阶段进行渲染
       if (isRenderPhaseUpdate(fiber)) {
         enqueueRenderPhaseUpdate(queue, update);
       } else {
@@ -20733,6 +20747,7 @@ if (process.env.NODE_ENV !== "production") {
               update.hasEagerState = true;
               update.eagerState = eagerState;
 
+              // 判断如果当前更新跟上一次更新一致。就跳过更新。
               if (objectIs(eagerState, currentState)) {
                 // Fast path. We can bail out without scheduling React to re-render.
                 // It's still possible that we'll need to rebase this update later,
@@ -20963,6 +20978,8 @@ if (process.env.NODE_ENV !== "production") {
           mountHookTypesDev();
           return mountRef(initialValue);
         },
+
+        // 初始化 useState的时候会调用这个函数
         useState: function (initialState) {
           currentHookNameInDev = "useState";
           mountHookTypesDev();
@@ -27209,6 +27226,12 @@ if (process.env.NODE_ENV !== "production") {
 
     var focusedInstanceHandle = null;
     var shouldFireAfterActiveInstanceBlur = false;
+
+    /**
+     * @param {*} root 根应用节点
+     * @param {*} firstChild render 阶段构造好的 fiber 树
+     * @returns
+     */
     function commitBeforeMutationEffects(root, firstChild) {
       focusedInstanceHandle = prepareForCommit(root.containerInfo);
       nextEffect = firstChild;
@@ -27268,6 +27291,10 @@ if (process.env.NODE_ENV !== "production") {
       var current = finishedWork.alternate;
       var flags = finishedWork.flags;
 
+      // 处理 flags 存在Snapshot的节点
+      // 有两个地方会打上 Snapshot:
+      // 1. class 组件 getSnapshotBeforeUpdate
+      // 2. completeWork HostRoot时， 在 commit 阶段清空container
       if ((flags & Snapshot) !== NoFlags) {
         setCurrentFiber(finishedWork);
 
@@ -30390,6 +30417,12 @@ if (process.env.NODE_ENV !== "production") {
       return exitStatus;
     }
 
+    /**
+     *
+     * @param {*} root  FiberRootNode
+     * @param {*} exitStatus 退出的状态
+     * @param {*} lanes 赛道优先级
+     */
     function finishConcurrentRender(root, exitStatus, lanes) {
       switch (exitStatus) {
         case RootIncomplete:
