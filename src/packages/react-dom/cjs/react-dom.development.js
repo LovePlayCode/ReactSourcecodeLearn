@@ -11,7 +11,7 @@
 
 if (process.env.NODE_ENV !== "production") {
   (function () {
-    "use strict";
+    ("use strict");
 
     /* global __REACT_DEVTOOLS_GLOBAL_HOOK__ */
     if (
@@ -5301,6 +5301,22 @@ if (process.env.NODE_ENV !== "production") {
       /*              */
       33554432; // Groups of flags that are used in the commit phase to skip over trees that
     // don't contain effects, by checking subtreeFlags.
+
+    /**
+     *   Update: ClassComponent 存在更新且定义了componentDidMount 或 componentDidUpdate 方法
+     *      HostComponent发生属性变化；HostText 发生内容变化；FC 定义了useLayoutEffect
+     *.  Snapshot: ClassComponent存在更新，且定义了getSnapshotBeforeUpdate方法
+     *      HostFiber 初始化时也会设置，用来清空 root 节点
+     *   Placement: 当前 FiberNode 存在 插入或移动
+     *   ChildDeletion: 有"需要删除的子 HostComponent"或子 HostText
+     *   ContentReset: 清空HostComponent的文本内容
+     *   Ref: HostComponent ref 属性的创建与更新
+     *   Hydrating: hydrate 相关。
+     *   Visibility: 控制SuspenseComponent的子树与fallback切换时子树的显隐
+     *   Callback:
+     *   Passive: 定义了useEffect且需要触发回调函数
+     *
+     */
 
     var BeforeMutationMask = // TODO: Remove Update flag from before mutation phase by re-landing Visibility
       // flag logic (see #20043)
@@ -31430,15 +31446,19 @@ if (process.env.NODE_ENV !== "production") {
       // only other reason this optimization exists is because it affects profiling.
       // Reconsider whether this is necessary.
 
+      // 判断子孙树是否存在副作用
       var subtreeHasEffects =
         (finishedWork.subtreeFlags &
           (BeforeMutationMask | MutationMask | LayoutMask | PassiveMask)) !==
         NoFlags;
+
+      // 判断当前树是否存在副作用
       var rootHasEffect =
         (finishedWork.flags &
           (BeforeMutationMask | MutationMask | LayoutMask | PassiveMask)) !==
         NoFlags;
 
+      // 如果命中副作用会进行副作用的操作，没命中的话直接切树。
       if (subtreeHasEffects || rootHasEffect) {
         var prevTransition = ReactCurrentBatchConfig$3.transition;
         ReactCurrentBatchConfig$3.transition = 0;
