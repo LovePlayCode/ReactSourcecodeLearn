@@ -4,20 +4,30 @@ import React from "react";
 const Page = () => {
   const [state, setState] = useState(0);
 
+  if (state === 100) {
+    return (
+      <>
+        <div key={2}>2</div>
+        <div key={1}>1</div>
+
+        <div key={3}>3</div>
+        <div key={4}>4</div>
+      </>
+    );
+  }
   return (
     <>
-      <div>1</div>
-      <div>2</div>
-      <div>3</div>
-      <div>4</div>
-      {state === 100 && <div>100</div>}
-      <button
+      <div
         onClick={() => {
           setState(100);
         }}
+        key={1}
       >
-        点击 100
-      </button>
+        1
+      </div>
+      <div key={2}>2</div>
+      <div key={3}>3</div>
+      <div key={4}>4</div>
     </>
   );
 };
