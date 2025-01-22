@@ -28398,6 +28398,7 @@ if (process.env.NODE_ENV !== "production") {
       );
     }
 
+    // 找到下一个元素，插入到下一个元素的前方，完成插入操作
     function getHostSibling(fiber) {
       // We're going to search forward into the tree until we find a sibling host
       // node. Unfortunately, if multiple insertions are done in a row we have to
@@ -28449,6 +28450,7 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     function commitPlacement(finishedWork) {
+      debugger;
       var parentFiber = getHostParentFiber(finishedWork); // Note: these two variables *must* always be updated together.
 
       var parent;
