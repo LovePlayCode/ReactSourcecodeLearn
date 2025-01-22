@@ -6132,6 +6132,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 选择要调度的 lanes
     function getNextLanes(root, wipLanes) {
       // Early bailout if there's no pending work left.
       var pendingLanes = root.pendingLanes;
@@ -6338,7 +6339,9 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 根据 "交互发生的时间" 为 lanes 设置过期时间
     function markStarvedLanesAsExpired(root, currentTime) {
+      debugger;
       // TODO: This gets called every time we yield. We can optimize by storing
       // the earliest expiration time on the root. Then use that to quickly bail out
       // of this function.
@@ -6367,6 +6370,8 @@ if (process.env.NODE_ENV !== "production") {
             // Assumes timestamps are monotonically increasing.
             expirationTimes[index] = computeExpirationTime(lane, currentTime);
           }
+
+          // 判断当前任务是否过期，如果过期，将expiredLanes标记为过期。
         } else if (expirationTime <= currentTime) {
           // This lane expired
           root.expiredLanes |= lane;
@@ -6498,6 +6503,7 @@ if (process.env.NODE_ENV !== "production") {
       return laneMap;
     }
     function markRootUpdated(root, updateLane, eventTime) {
+      // 将本次更新的优先级附加在pendingLanes上。
       root.pendingLanes |= updateLane; // If there are any suspended transitions, it's possible this new update
       // could unblock them. Clear the suspended lanes so that we can try rendering
       // them again.
@@ -6520,6 +6526,7 @@ if (process.env.NODE_ENV !== "production") {
       var index = laneToIndex(updateLane); // We can always overwrite an existing timestamp because we prefer the most
       // recent event, and we assume time is monotonically increasing.
 
+      // 记录"交互发生的时间"
       eventTimes[index] = eventTime;
     }
     function markRootSuspended(root, suspendedLanes) {
@@ -29822,12 +29829,16 @@ if (process.env.NODE_ENV !== "production") {
     var NoContext =
       /*             */
       0;
+
+    // 当前处在 "批量更新" 上下文
     var BatchedContext =
       /*               */
       1;
     var RenderContext =
       /*                */
       2;
+
+    // 当前处在 commit阶段
     var CommitContext =
       /*                */
       4;
@@ -29841,12 +29852,14 @@ if (process.env.NODE_ENV !== "production") {
     var RootSuspendedWithDelay = 4;
     var RootCompleted = 5; // Describes where we are in the React execution stack
 
+    // 当前处在 render 阶段上下文
     var executionContext = NoContext; // The root we're working on
 
     var workInProgressRoot = null; // The fiber we're working on
 
     var workInProgress = null; // The lanes we're rendering
 
+    // 当前 render阶段需要处理的 lanes
     var workInProgressRootRenderLanes = NoLanes; // Stack that allows components to change the render lanes for its subtree
     // This is a superset of the lanes we started working on at the root. The only
     // case where it's different from `workInProgressRootRenderLanes` is when we
@@ -29930,11 +29943,15 @@ if (process.env.NODE_ENV !== "production") {
       return currentEventTime;
     }
     function requestUpdateLane(fiber) {
+      debugger;
       // Special cases
       var mode = fiber.mode;
 
+      // 非并发，产生同步优先级
       if ((mode & ConcurrentMode) === NoMode) {
         return SyncLane;
+
+        // 判断是否在 render 阶段产生的调度
       } else if (
         (executionContext & RenderContext) !== NoContext &&
         workInProgressRootRenderLanes !== NoLanes
@@ -29951,6 +29968,7 @@ if (process.env.NODE_ENV !== "production") {
         return pickArbitraryLane(workInProgressRootRenderLanes);
       }
 
+      // 判断是否为过渡优先级
       var isTransition = requestCurrentTransition() !== NoTransition;
 
       if (isTransition) {
@@ -29974,6 +29992,7 @@ if (process.env.NODE_ENV !== "production") {
       // use that directly.
       // TODO: Move this type conversion to the event priority module.
 
+      // 判断是否有手动设置优先级
       var updateLane = getCurrentUpdatePriority();
 
       if (updateLane !== NoLane) {
@@ -29985,6 +30004,7 @@ if (process.env.NODE_ENV !== "production") {
       // use that directly.
       // TODO: Move this type conversion to the event priority module.
 
+      // 找到事件优先级
       var eventLane = getCurrentEventPriority();
       return eventLane;
     }
@@ -30005,6 +30025,9 @@ if (process.env.NODE_ENV !== "production") {
 
     function scheduleUpdateOnFiber(fiber, lane, eventTime) {
       checkForNestedUpdates();
+
+      // lanes 的向上冒泡。在 render 阶段中，如果workInProgress.childLanes不包含在
+      // renderLanes 中，可以跳过子孙 fiber 的 render 流程
       var root = markUpdateLaneFromFiberToRoot(fiber, lane);
 
       if (root === null) {
@@ -30351,6 +30374,10 @@ if (process.env.NODE_ENV !== "production") {
       // bug we're still investigating. Once the bug in Scheduler is fixed,
       // we can remove this, since we track expiration ourselves.
 
+      // 开启时间分片渲染的条件:
+      // 1. 不包含阻塞的 lanes
+      // 2. 不包含 "过期的 lanes"
+      // 3. Scheduler调度的回调函数未过期
       var shouldTimeSlice =
         !includesBlockingLane(root, lanes) &&
         !includesExpiredLane(root, lanes) &&
