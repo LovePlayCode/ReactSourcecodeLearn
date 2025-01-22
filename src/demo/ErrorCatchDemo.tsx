@@ -69,6 +69,11 @@ class ErrorBoundary extends Component {
   state = {
     hasError: false,
   };
+  static getDerivedStateFromError(error) {
+    debugger;
+    // 更新状态，以便下一次渲染将显示后备 UI。
+    return { hasError: true };
+  }
   // static getDerivedStateFromError() {
   //   console.log('in');
   //   return {

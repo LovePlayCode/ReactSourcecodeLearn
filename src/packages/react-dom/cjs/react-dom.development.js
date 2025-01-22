@@ -34207,7 +34207,7 @@ if (process.env.NODE_ENV !== "production") {
           }
         }
       }
-      debugger;
+
       updateContainer(children, root, null, null);
     };
 
