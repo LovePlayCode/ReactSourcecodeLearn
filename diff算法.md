@@ -234,3 +234,425 @@ for (; newIdx < newChildren.length; newIdx++) {
   }
 }
 ```
+
+# 优化阶段
+
+当 diff 比较完之后，进入优化阶段。目前看下来主要有两个地方会对这个进行优化
+
+1. completeWork 阶段， 这个阶段根据是否有 current 进行判断，如果 current !== null 且 stateNode !== null。 completeWork 不会创建新的节点，只会创建一个 updatePayload, 然后绑定到当前 Fiber 的 updateQueue 上。
+
+```js
+
+        case HostComponent: {
+          popHostContext(workInProgress);
+          var rootContainerInstance = getRootHostContainer();
+          var type = workInProgress.type;
+
+          // 如果是复用的节点，那么会走到这里，在 这里创建一个更新队列，进行数据的更新。 然后将副作用冒泡之后，直接 return
+          // 如果 current= null 说明是新创建的节点，走创建流程即可。
+          if (current !== null && workInProgress.stateNode != null) {
+            updateHostComponent(
+              current,
+              workInProgress,
+              type,
+              newProps,
+              rootContainerInstance
+            );
+
+            if (current.ref !== workInProgress.ref) {
+              markRef(workInProgress);
+            }
+          } else {
+            if (!newProps) {
+              if (workInProgress.stateNode === null) {
+                throw new Error(
+                  "We must have new props for new mounts. This error is likely " +
+                    "caused by a bug in React. Please file an issue."
+                );
+              } // This can happen when we abort work.
+
+              bubbleProperties(workInProgress);
+              return null;
+            }
+
+            var currentHostContext = getHostContext(); // TODO: Move createInstance to beginWork and keep it on a context
+            // "stack" as the parent. Then append children as we go in beginWork
+            // or completeWork depending on whether we want to add them top->down or
+            // bottom->up. Top->down is faster in IE11.
+
+            var _wasHydrated = popHydrationState(workInProgress);
+
+            if (_wasHydrated) {
+              // TODO: Move this and createInstance step into the beginPhase
+              // to consolidate.
+              if (
+                prepareToHydrateHostInstance(
+                  workInProgress,
+                  rootContainerInstance,
+                  currentHostContext
+                )
+              ) {
+                // If changes to the hydrated node need to be applied at the
+                // commit-phase we mark this as such.
+                markUpdate(workInProgress);
+              }
+            } else {
+              var instance = createInstance(
+                type,
+                newProps,
+                rootContainerInstance,
+                currentHostContext,
+                workInProgress
+              );
+              appendAllChildren(instance, workInProgress, false, false);
+              workInProgress.stateNode = instance; // Certain renderers require commit-time effects for initial mount.
+              // (eg DOM renderer supports auto-focus for certain elements).
+              // Make sure such renderers get scheduled for later work.
+
+              if (
+                finalizeInitialChildren(
+                  instance,
+                  type,
+                  newProps,
+                  rootContainerInstance
+                )
+              ) {
+                markUpdate(workInProgress);
+              }
+            }
+
+            if (workInProgress.ref !== null) {
+              // If there is a ref on a host node we need to schedule a callback
+              markRef(workInProgress);
+            }
+          }
+
+          bubbleProperties(workInProgress);
+          return null;
+        }
+
+
+
+         // 将updateHostComponent绑定一个函数，这个函数在completeWork更新的时候会执行
+      updateHostComponent = function (
+        current,
+        workInProgress,
+        type,
+        newProps,
+        rootContainerInstance
+      ) {
+        // If we have an alternate, that means this is an update and we need to
+        // schedule a side-effect to do the updates.
+        var oldProps = current.memoizedProps;
+
+        if (oldProps === newProps) {
+          // In mutation mode, this is sufficient for a bailout because
+          // we won't touch this node even if children changed.
+          return;
+        } // If we get updated because one of our children updated, we don't
+        // have newProps so we'll have to reuse them.
+        // TODO: Split the update API as separate for the props vs. children.
+        // Even better would be if children weren't special cased at all tho.
+
+        var instance = workInProgress.stateNode;
+        var currentHostContext = getHostContext(); // TODO: Experiencing an error where oldProps is null. Suggests a host
+        // component is hitting the resume path. Figure out why. Possibly
+        // related to `hidden`.
+
+        var updatePayload = prepareUpdate(
+          instance,
+          type,
+          oldProps,
+          newProps,
+          rootContainerInstance,
+          currentHostContext
+        ); // TODO: Type this specific to this type of component.
+
+        workInProgress.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
+        // is a new ref we mark this as an update. All the work is done in commitWork.
+
+        if (updatePayload) {
+          markUpdate(workInProgress);
+        }
+      };
+```
+
+2. 在 commit 阶段，会根据 flgas 判断当前更新属于 update 还是其他，如果是 update，会复用节点，具体就是会遍历 updatQueue，然后只会更新 dom 里面的值，就避免了创建新 dom 而带来的性能损耗。
+
+```js
+    function commitMutationEffectsOnFiber(finishedWork, root) {
+      // TODO: The factoring of this phase could probably be improved. Consider
+      // switching on the type of work before checking the flags. That's what
+      // we do in all the other phases. I think this one is only different
+      // because of the shared reconciliation logic below.
+      var flags = finishedWork.flags;
+
+      if (flags & ContentReset) {
+        commitResetTextContent(finishedWork);
+      }
+
+      if (flags & Ref) {
+        var current = finishedWork.alternate;
+
+        if (current !== null) {
+          commitDetachRef(current);
+        }
+      }
+
+      if (flags & Visibility) {
+        switch (finishedWork.tag) {
+          case SuspenseComponent: {
+            var newState = finishedWork.memoizedState;
+            var isHidden = newState !== null;
+
+            if (isHidden) {
+              var _current = finishedWork.alternate;
+              var wasHidden =
+                _current !== null && _current.memoizedState !== null;
+
+              if (!wasHidden) {
+                // TODO: Move to passive phase
+                markCommitTimeOfFallback();
+              }
+            }
+
+            break;
+          }
+
+          case OffscreenComponent: {
+            var _newState = finishedWork.memoizedState;
+
+            var _isHidden = _newState !== null;
+
+            var _current2 = finishedWork.alternate;
+
+            var _wasHidden =
+              _current2 !== null && _current2.memoizedState !== null;
+
+            var offscreenBoundary = finishedWork;
+
+            {
+              // TODO: This needs to run whenever there's an insertion or update
+              // inside a hidden Offscreen tree.
+              hideOrUnhideAllChildren(offscreenBoundary, _isHidden);
+            }
+
+            {
+              if (_isHidden) {
+                if (!_wasHidden) {
+                  if ((offscreenBoundary.mode & ConcurrentMode) !== NoMode) {
+                    nextEffect = offscreenBoundary;
+                    var offscreenChild = offscreenBoundary.child;
+
+                    while (offscreenChild !== null) {
+                      nextEffect = offscreenChild;
+                      disappearLayoutEffects_begin(offscreenChild);
+                      offscreenChild = offscreenChild.sibling;
+                    }
+                  }
+                }
+              }
+
+              break;
+            }
+          }
+        }
+      } // The following switch statement is only concerned about placement,
+      // updates, and deletions. To avoid needing to add a case for every possible
+      // bitmap value, we remove the secondary effects from the effect tag and
+      // switch on that value.
+
+      var primaryFlags = flags & (Placement | Update | Hydrating);
+
+      // 通过副作用判断当前是插入还是更新，每个副作用有不同的分支
+      switch (primaryFlags) {
+        case Placement: {
+          /*KaSong*/ logHook("updateDOM", finishedWork, "commitPlacement");
+          commitPlacement(finishedWork); // Clear the "placement" from effect tag so that we know that this is
+          // inserted, before any life-cycles like componentDidMount gets called.
+          // TODO: findDOMNode doesn't rely on this any more but isMounted does
+          // and isMounted is deprecated anyway so we should be able to kill this.
+
+          finishedWork.flags &= ~Placement;
+          break;
+        }
+
+        case PlacementAndUpdate: {
+          // Placement
+          /*KaSong*/ logHook("updateDOM", finishedWork, "commitPlacement");
+          commitPlacement(finishedWork); // Clear the "placement" from effect tag so that we know that this is
+          // inserted, before any life-cycles like componentDidMount gets called.
+
+          finishedWork.flags &= ~Placement; // Update
+
+          var _current3 = finishedWork.alternate;
+          /*KaSong*/ logHook("updateDOM", finishedWork, "commitWork");
+          commitWork(_current3, finishedWork);
+          break;
+        }
+
+        case Hydrating: {
+          finishedWork.flags &= ~Hydrating;
+          break;
+        }
+
+        case HydratingAndUpdate: {
+          finishedWork.flags &= ~Hydrating; // Update
+
+          var _current4 = finishedWork.alternate;
+          commitWork(_current4, finishedWork);
+          break;
+        }
+
+        // 更新阶段，React 对这部分做了优化
+        case Update: {
+          var _current5 = finishedWork.alternate;
+          /*KaSong*/ logHook("updateDOM", finishedWork, "commitWork");
+          commitWork(_current5, finishedWork);
+          break;
+        }
+      }
+    }
+
+    // 这段代码是实际优化的地方
+            case HostComponent: {
+          var instance = finishedWork.stateNode;
+
+          // 如果是可复用的节点，会按照 updateQueue 进行节点的更新，避免重新创建 dom 元素
+          if (instance != null) {
+            // Commit the work prepared earlier.
+            var newProps = finishedWork.memoizedProps; // For hydration we reuse the update path but we treat the oldProps
+            // as the newProps. The updatePayload will contain the real change in
+            // this case.
+
+            var oldProps = current !== null ? current.memoizedProps : newProps;
+            var type = finishedWork.type; // TODO: Type the updateQueue to be specific to host components.
+
+            var updatePayload = finishedWork.updateQueue;
+            finishedWork.updateQueue = null;
+
+            if (updatePayload !== null) {
+              commitUpdate(instance, updatePayload, type, oldProps, newProps);
+            }
+          }
+
+          return;
+        }
+
+
+        function commitUpdate(
+      domElement,
+      updatePayload,
+      type,
+      oldProps,
+      newProps,
+      internalInstanceHandle
+    ) {
+      // Update the props handle so that we know which props are the ones with
+      // with current event handlers.
+      updateFiberProps(domElement, newProps); // Apply the diff to the DOM node.
+
+      updateProperties(domElement, updatePayload, type, oldProps, newProps);
+    }
+
+        function updateFiberProps(node, props) {
+      node[internalPropsKey] = props;
+    }
+
+
+        function updateProperties(
+      domElement,
+      updatePayload,
+      tag,
+      lastRawProps,
+      nextRawProps
+    ) {
+      // Update checked *before* name.
+      // In the middle of an update, it is possible to have multiple checked.
+      // When a checked radio tries to change name, browser makes another radio's checked false.
+      if (
+        tag === "input" &&
+        nextRawProps.type === "radio" &&
+        nextRawProps.name != null
+      ) {
+        updateChecked(domElement, nextRawProps);
+      }
+
+      var wasCustomComponentTag = isCustomComponent(tag, lastRawProps);
+      var isCustomComponentTag = isCustomComponent(tag, nextRawProps); // Apply the diff.
+
+      updateDOMProperties(
+        domElement,
+        updatePayload,
+        wasCustomComponentTag,
+        isCustomComponentTag
+      ); // TODO: Ensure that an update gets scheduled if any of the special props
+      // changed.
+
+      switch (tag) {
+        case "input":
+          // Update the wrapper around inputs *after* updating props. This has to
+          // happen after `updateDOMProperties`. Otherwise HTML5 input validations
+          // raise warnings and prevent the new value from being assigned.
+          updateWrapper(domElement, nextRawProps);
+          break;
+
+        case "textarea":
+          updateWrapper$1(domElement, nextRawProps);
+          break;
+
+        case "select":
+          // <select> value update needs to occur after <option> children
+          // reconciliation
+          postUpdateWrapper(domElement, nextRawProps);
+          break;
+      }
+    }
+
+
+
+        // 在 commit 阶段，如果遇到可以复用的节点，会走复用逻辑
+    function updateDOMProperties(
+      domElement,
+      updatePayload,
+      wasCustomComponentTag,
+      isCustomComponentTag
+    ) {
+      // TODO: Handle wasCustomComponentTag
+      for (var i = 0; i < updatePayload.length; i += 2) {
+        var propKey = updatePayload[i];
+        var propValue = updatePayload[i + 1];
+
+        if (propKey === STYLE) {
+          setValueForStyles(domElement, propValue);
+          /*KaSong*/ logHook(
+            "updateDOMProperties",
+            domElement,
+            "setValueForStyles"
+          );
+        } else if (propKey === DANGEROUSLY_SET_INNER_HTML) {
+          setInnerHTML(domElement, propValue);
+          /*KaSong*/ logHook("updateDOMProperties", domElement, "setInnerHTML");
+        } else if (propKey === CHILDREN) {
+          setTextContent(domElement, propValue);
+          /*KaSong*/ logHook(
+            "updateDOMProperties",
+            domElement,
+            "setTextContent"
+          );
+        } else {
+          setValueForProperty(
+            domElement,
+            propKey,
+            propValue,
+            isCustomComponentTag
+          );
+          /*KaSong*/ logHook(
+            "updateDOMProperties",
+            domElement,
+            "setValueForProperty"
+          );
+        }
+      }
+    }
+```

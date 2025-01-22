@@ -13,6 +13,7 @@ const DemoLi: FC<{ sum: number }> = ({ sum }) => {
   console.log("初始化。。。");
   useEffect(() => {}, []);
   return <li>{sum}</li>;
+  // return sum === 100 ? <span>{sum}</span> : <li>{sum}</li>;
 };
 
 // 用于调试 Diff算法 的Demo
@@ -30,7 +31,7 @@ export default function App() {
 
   return (
     <ul onClick={() => updateNum(1)}>
-      <DemoLi key="a" sum={1} />
+      <DemoLi key="a" sum={100} />
       <DemoLi key="b1" sum={2} />
     </ul>
   );

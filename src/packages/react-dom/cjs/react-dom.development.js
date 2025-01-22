@@ -11187,6 +11187,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 在 commit 阶段，如果遇到可以复用的节点，会走复用逻辑
     function updateDOMProperties(
       domElement,
       updatePayload,
@@ -22625,6 +22626,7 @@ if (process.env.NODE_ENV !== "production") {
         // Noop
       };
 
+      // 将updateHostComponent绑定一个函数，这个函数在completeWork更新的时候会执行
       updateHostComponent = function (
         current,
         workInProgress,
@@ -22937,6 +22939,8 @@ if (process.env.NODE_ENV !== "production") {
           var rootContainerInstance = getRootHostContainer();
           var type = workInProgress.type;
 
+          // 如果是复用的节点，那么会走到这里，在 这里创建一个更新队列，进行数据的更新。 然后将副作用冒泡之后，直接 return
+          // 如果 current= null 说明是新创建的节点，走创建流程即可。
           if (current !== null && workInProgress.stateNode != null) {
             updateHostComponent(
               current,
@@ -28686,6 +28690,7 @@ if (process.env.NODE_ENV !== "production") {
         case HostComponent: {
           var instance = finishedWork.stateNode;
 
+          // 如果是可复用的节点，会按照 updateQueue 进行节点的更新，避免重新创建 dom 元素
           if (instance != null) {
             // Commit the work prepared earlier.
             var newProps = finishedWork.memoizedProps; // For hydration we reuse the update path but we treat the oldProps
@@ -28833,6 +28838,7 @@ if (process.env.NODE_ENV !== "production") {
       resetTextContent(current.stateNode);
     }
 
+    // Mutation阶段
     function commitMutationEffects(root, firstChild, committedLanes) {
       inProgressLanes = committedLanes;
       inProgressRoot = root;
@@ -28863,6 +28869,7 @@ if (process.env.NODE_ENV !== "production") {
 
         var child = fiber.child;
 
+        // 找到发生副作用的最子树，从子树开始complete
         if ((fiber.subtreeFlags & MutationMask) !== NoFlags && child !== null) {
           ensureCorrectReturnPointer(child, fiber);
           nextEffect = child;
@@ -28982,6 +28989,7 @@ if (process.env.NODE_ENV !== "production") {
 
       var primaryFlags = flags & (Placement | Update | Hydrating);
 
+      // 通过副作用判断当前是插入还是更新，每个副作用有不同的分支
       switch (primaryFlags) {
         case Placement: {
           /*KaSong*/ logHook("updateDOM", finishedWork, "commitPlacement");
@@ -31584,7 +31592,6 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     function flushPassiveEffects() {
-      debugger;
       // Returns whether passive effects were flushed.
       // TODO: Combine this check with the one in flushPassiveEFfectsImpl. We should
       // probably just combine the two functions. I believe they were only separate
@@ -32945,6 +32952,7 @@ if (process.env.NODE_ENV !== "production") {
       return IndeterminateComponent;
     } // This is used to create an alternate fiber to do work on.
 
+    // 在复用逻辑的条件下，会走到这个方法
     function createWorkInProgress(current, pendingProps) {
       var workInProgress = current.alternate;
 
