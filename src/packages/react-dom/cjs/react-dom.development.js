@@ -22129,6 +22129,7 @@ if (process.env.NODE_ENV !== "production") {
       update.tag = CaptureUpdate;
       var getDerivedStateFromError = fiber.type.getDerivedStateFromError;
 
+      // 判断是否定义了getDerivedStateFromError函数
       if (typeof getDerivedStateFromError === "function") {
         var error$1 = errorInfo.value;
 
@@ -22173,7 +22174,10 @@ if (process.env.NODE_ENV !== "production") {
           }
 
           var error$1 = errorInfo.value;
+
           var stack = errorInfo.stack;
+
+          // 调用 class 组件上的生命周期
           this.componentDidCatch(error$1, {
             componentStack: stack !== null ? stack : "",
           });
@@ -22449,6 +22453,7 @@ if (process.env.NODE_ENV !== "production") {
         }
       }
 
+      // 判断是错误还是Promise
       if (
         value !== null &&
         typeof value === "object" &&
@@ -31080,6 +31085,7 @@ if (process.env.NODE_ENV !== "production") {
           workLoopSync();
           break;
         } catch (thrownValue) {
+          // 错误捕获，可以交给错误边界进行处理
           handleError(root, thrownValue);
         }
       } while (true);
