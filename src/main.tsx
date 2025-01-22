@@ -10,7 +10,7 @@ import "./globalLog";
 // import App from './demo/bailoutDemo';
 // import App from './demo/ContextDemo';
 // import App from './demo/BailoutDemo/step1';
-import App from "./demo/DiffDemo/v4";
+import App from "./demo/DiffDemo/v3";
 // import App from './demo/Performance/demo2';
 // import App from './demo/ErrorCatchDemo';
 // import App from "./demo/Demo2";

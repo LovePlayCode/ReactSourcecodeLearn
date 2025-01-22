@@ -17827,12 +17827,14 @@ if (process.env.NODE_ENV !== "production") {
         if (current !== null) {
           var oldIndex = current.index;
 
+          // 如果找到的老节点小于当前最后一个索引位置，给节点打上移动标记，返回lastPlacedIndex
           if (oldIndex < lastPlacedIndex) {
             // This is a move.
             newFiber.flags |= Placement;
             /*KaSong*/ logHook("placeChild", "move", newFiber, lastPlacedIndex);
             return lastPlacedIndex;
           } else {
+            // 如果oldFiber 的 index 大于等于当前的lastPlacedIndex, 说明不需要移动，返回 oldIndex 即可。
             // This item can stay in place.
             /*KaSong*/ logHook("placeChild", "stay", newFiber, oldIndex);
             return oldIndex;
@@ -17893,6 +17895,7 @@ if (process.env.NODE_ENV !== "production") {
         }
 
         if (current !== null) {
+          // 如果当前elementType === elementType 代表可以复用，直接复用节点
           if (
             current.elementType === elementType || // Keep this check inline so it only runs on the false path:
             isCompatibleFamilyForHotReloading(current, element) || // Lazy types should reconcile their resolved type.
@@ -17905,6 +17908,7 @@ if (process.env.NODE_ENV !== "production") {
               resolveLazy(elementType) === current.type)
           ) {
             // Move based on index
+            // 复用节点
             var existing = useFiber(current, element.props);
             existing.ref = coerceRef(returnFiber, current, element);
             existing.return = returnFiber;
@@ -18291,6 +18295,7 @@ if (process.env.NODE_ENV !== "production") {
           }
 
           if (shouldTrackSideEffects) {
+            // 如果 key 相同，但是elementType不同，将oldFiber 打上删除标记
             if (oldFiber && newFiber.alternate === null) {
               // We matched the slot, but we didn't reuse the existing fiber, so we
               // need to delete the existing child.
@@ -18315,6 +18320,7 @@ if (process.env.NODE_ENV !== "production") {
           oldFiber = nextOldFiber;
         }
 
+        // 当newChildren遍历完，oldFiber未遍历完，需要遍历其余oldFiber，依次打上Deletion
         if (newIdx === newChildren.length) {
           // We've reached the end of the new children. We can delete the rest.
           deleteRemainingChildren(returnFiber, oldFiber);
@@ -18327,6 +18333,7 @@ if (process.env.NODE_ENV !== "production") {
           return resultingFirstChild;
         }
 
+        // oldFiber遍历完，newChildren未遍历完，需要遍历剩下newChildren依次生成fiberNode
         if (oldFiber === null) {
           // If we don't have any more existing children we can choose a fast path
           // since the rest will all be insertions.
@@ -18361,6 +18368,8 @@ if (process.env.NODE_ENV !== "production") {
           return resultingFirstChild;
         } // Add all children to a key map for quick lookups.
 
+        // 这里的阶段是进入了第二次遍历到情况，先把老的 Fiber 树全部变成一个 map 结构，方便以O(1)的时间复杂度取值
+        // 这里的逻辑有一个点：如果有 key， 那么 map 的结构是 key: fiber 如果没 key，map 的结构是 index : fiber
         var existingChildren = mapRemainingChildren(returnFiber, oldFiber); // Keep scanning and use the map to restore deleted items as moves.
 
         for (; newIdx < newChildren.length; newIdx++) {
