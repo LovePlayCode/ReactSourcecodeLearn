@@ -11528,6 +11528,8 @@ if (process.env.NODE_ENV !== "production") {
       var styleUpdates = null;
 
       for (propKey in lastProps) {
+        // 下一个nextProps中有propKey || 本身他自身就没这个属性 || 这个属性为 null
+        // 上面三种情况下跳过即可
         if (
           nextProps.hasOwnProperty(propKey) ||
           !lastProps.hasOwnProperty(propKey) ||
@@ -11536,6 +11538,7 @@ if (process.env.NODE_ENV !== "production") {
           continue;
         }
 
+        // 对style属性做处理，将他内部的属性重置。
         if (propKey === STYLE) {
           var lastStyle = lastProps[propKey];
 
@@ -11571,10 +11574,12 @@ if (process.env.NODE_ENV !== "production") {
         }
       }
 
+      // update流程前后发生改变的属性
       for (propKey in nextProps) {
         var nextProp = nextProps[propKey];
         var lastProp = lastProps != null ? lastProps[propKey] : undefined;
 
+        // 当前不存在这个属性 || 这个属性等于上一个属性 || 这个属性为null
         if (
           !nextProps.hasOwnProperty(propKey) ||
           nextProp === lastProp ||
@@ -11588,6 +11593,7 @@ if (process.env.NODE_ENV !== "production") {
             if (nextProp) {
               // Freeze the next style object so that we can assume it won't be
               // mutated. We have already warned for this in the past.
+              // 冻结对象，防止突变
               Object.freeze(nextProp);
             }
           }
@@ -11684,6 +11690,7 @@ if (process.env.NODE_ENV !== "production") {
         (updatePayload = updatePayload || []).push(STYLE, styleUpdates);
       }
 
+      // 返回处理后的updatePayload
       return updatePayload;
     } // Apply the diff.
 
@@ -22664,6 +22671,7 @@ if (process.env.NODE_ENV !== "production") {
         workInProgress.updateQueue = updatePayload; // If the update payload indicates that there is a change or if there
         // is a new ref we mark this as an update. All the work is done in commitWork.
 
+        // 标记更新，在 flags 打上标记更新的副作用
         if (updatePayload) {
           markUpdate(workInProgress);
         }

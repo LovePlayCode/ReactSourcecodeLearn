@@ -1750,3 +1750,231 @@ const Demo2 = () => {
 下面看一下比较复杂的整个解析过程
 
 ![alt text](image-1.png)
+
+# update 阶段
+
+主要是通过 diffProperties 来感知更新阶段
+
+1. 第一次遍历，标记删除 "更新前有，更新后没有"的属性
+2. 第二次遍历，标记更新 "update 流程前后发生改变"的属性
+3. 变化属性的 key、value 会保存在 fiberNode.updateQueue 中。
+4. 标记当前副作用 flags |= Update
+5. 在 fiberNode.updateQueue 中，数据以 key、value 作为数组的相邻两项。
+   eg: [title: '1','style',{"color": "#111"}]
+
+```js
+function diffProperties(
+  domElement,
+  tag,
+  lastRawProps,
+  nextRawProps,
+  rootContainerElement
+) {
+  {
+    validatePropertiesInDevelopment(tag, nextRawProps);
+  }
+
+  var updatePayload = null;
+  var lastProps;
+  var nextProps;
+
+  switch (tag) {
+    case "input":
+      lastProps = getHostProps(domElement, lastRawProps);
+      nextProps = getHostProps(domElement, nextRawProps);
+      updatePayload = [];
+      break;
+
+    case "select":
+      lastProps = getHostProps$1(domElement, lastRawProps);
+      nextProps = getHostProps$1(domElement, nextRawProps);
+      updatePayload = [];
+      break;
+
+    case "textarea":
+      lastProps = getHostProps$2(domElement, lastRawProps);
+      nextProps = getHostProps$2(domElement, nextRawProps);
+      updatePayload = [];
+      break;
+
+    default:
+      lastProps = lastRawProps;
+      nextProps = nextRawProps;
+
+      if (
+        typeof lastProps.onClick !== "function" &&
+        typeof nextProps.onClick === "function"
+      ) {
+        // TODO: This cast may not be sound for SVG, MathML or custom elements.
+        trapClickOnNonInteractiveElement(domElement);
+      }
+
+      break;
+  }
+
+  assertValidProps(tag, nextProps);
+  var propKey;
+  var styleName;
+  var styleUpdates = null;
+
+  for (propKey in lastProps) {
+    // 下一个nextProps中有propKey || 本身他自身就没这个属性 || 这个属性为 null
+    // 上面三种情况下跳过即可
+    if (
+      nextProps.hasOwnProperty(propKey) ||
+      !lastProps.hasOwnProperty(propKey) ||
+      lastProps[propKey] == null
+    ) {
+      continue;
+    }
+
+    // 对style属性做处理，将他内部的属性重置。
+    if (propKey === STYLE) {
+      var lastStyle = lastProps[propKey];
+
+      for (styleName in lastStyle) {
+        if (lastStyle.hasOwnProperty(styleName)) {
+          if (!styleUpdates) {
+            styleUpdates = {};
+          }
+
+          styleUpdates[styleName] = "";
+        }
+      }
+    } else if (propKey === DANGEROUSLY_SET_INNER_HTML || propKey === CHILDREN);
+    else if (
+      propKey === SUPPRESS_CONTENT_EDITABLE_WARNING ||
+      propKey === SUPPRESS_HYDRATION_WARNING
+    );
+    else if (propKey === AUTOFOCUS);
+    else if (registrationNameDependencies.hasOwnProperty(propKey)) {
+      // This is a special case. If any listener updates we need to ensure
+      // that the "current" fiber pointer gets updated so we need a commit
+      // to update this element.
+      if (!updatePayload) {
+        updatePayload = [];
+      }
+    } else {
+      // For all other deleted properties we add it to the queue. We use
+      // the allowed property list in the commit phase instead.
+      (updatePayload = updatePayload || []).push(propKey, null);
+    }
+  }
+
+  // update流程前后发生改变的属性
+  for (propKey in nextProps) {
+    var nextProp = nextProps[propKey];
+    var lastProp = lastProps != null ? lastProps[propKey] : undefined;
+
+    // 当前不存在这个属性 || 这个属性等于上一个属性 || 这个属性为null
+    if (
+      !nextProps.hasOwnProperty(propKey) ||
+      nextProp === lastProp ||
+      (nextProp == null && lastProp == null)
+    ) {
+      continue;
+    }
+
+    if (propKey === STYLE) {
+      {
+        if (nextProp) {
+          // Freeze the next style object so that we can assume it won't be
+          // mutated. We have already warned for this in the past.
+          // 冻结对象，防止突变
+          Object.freeze(nextProp);
+        }
+      }
+
+      if (lastProp) {
+        // Unset styles on `lastProp` but not on `nextProp`.
+        for (styleName in lastProp) {
+          if (
+            lastProp.hasOwnProperty(styleName) &&
+            (!nextProp || !nextProp.hasOwnProperty(styleName))
+          ) {
+            if (!styleUpdates) {
+              styleUpdates = {};
+            }
+
+            styleUpdates[styleName] = "";
+          }
+        } // Update styles that changed since `lastProp`.
+
+        for (styleName in nextProp) {
+          if (
+            nextProp.hasOwnProperty(styleName) &&
+            lastProp[styleName] !== nextProp[styleName]
+          ) {
+            if (!styleUpdates) {
+              styleUpdates = {};
+            }
+
+            styleUpdates[styleName] = nextProp[styleName];
+          }
+        }
+      } else {
+        // Relies on `updateStylesByID` not mutating `styleUpdates`.
+        if (!styleUpdates) {
+          if (!updatePayload) {
+            updatePayload = [];
+          }
+
+          updatePayload.push(propKey, styleUpdates);
+        }
+
+        styleUpdates = nextProp;
+      }
+    } else if (propKey === DANGEROUSLY_SET_INNER_HTML) {
+      var nextHtml = nextProp ? nextProp[HTML$1] : undefined;
+      var lastHtml = lastProp ? lastProp[HTML$1] : undefined;
+
+      if (nextHtml != null) {
+        if (lastHtml !== nextHtml) {
+          (updatePayload = updatePayload || []).push(propKey, nextHtml);
+        }
+      }
+    } else if (propKey === CHILDREN) {
+      if (typeof nextProp === "string" || typeof nextProp === "number") {
+        (updatePayload = updatePayload || []).push(propKey, "" + nextProp);
+      }
+    } else if (
+      propKey === SUPPRESS_CONTENT_EDITABLE_WARNING ||
+      propKey === SUPPRESS_HYDRATION_WARNING
+    );
+    else if (registrationNameDependencies.hasOwnProperty(propKey)) {
+      if (nextProp != null) {
+        // We eagerly listen to this even though we haven't committed yet.
+        if (typeof nextProp !== "function") {
+          warnForInvalidEventListener(propKey, nextProp);
+        }
+
+        if (propKey === "onScroll") {
+          listenToNonDelegatedEvent("scroll", domElement);
+        }
+      }
+
+      if (!updatePayload && lastProp !== nextProp) {
+        // This is a special case. If any listener updates we need to ensure
+        // that the "current" props pointer gets updated so we need a commit
+        // to update this element.
+        updatePayload = [];
+      }
+    } else {
+      // For any other property we always add it to the queue and then we
+      // filter it out using the allowed property list during the commit.
+      (updatePayload = updatePayload || []).push(propKey, nextProp);
+    }
+  }
+
+  if (styleUpdates) {
+    {
+      validateShorthandPropertyCollisionInDev(styleUpdates, nextProps[STYLE]);
+    }
+
+    (updatePayload = updatePayload || []).push(STYLE, styleUpdates);
+  }
+
+  // 返回处理后的updatePayload
+  return updatePayload;
+} // Apply the diff.
+```
