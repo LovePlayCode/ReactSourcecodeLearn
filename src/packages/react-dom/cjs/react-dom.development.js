@@ -7,6 +7,7 @@
  * LICENSE file in the root directory of this source tree.
  */
 
+// 测试是否可以提交
 "use strict";
 
 if (process.env.NODE_ENV !== "production") {
