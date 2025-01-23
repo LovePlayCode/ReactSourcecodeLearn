@@ -30111,6 +30111,7 @@ if (process.env.NODE_ENV !== "production") {
     // e.g. retrying a Suspense boundary isn't an update, but it does schedule work
     // on a fiber.
 
+    // 参与调度的是 FiberRootNode，产生 update 是某一个 fiberNode，需要将产生update 的 fiberNode 向上冒泡到 FiberRootNode，这样可以很方便的捕获和操作节点
     function markUpdateLaneFromFiberToRoot(sourceFiber, lane) {
       // Update the source fiber's lanes
       /*KaSong*/ logHook(
@@ -30138,6 +30139,7 @@ if (process.env.NODE_ENV !== "production") {
       var node = sourceFiber;
       var parent = sourceFiber.return;
 
+      // 每个祖先 fiberNode 都回附加 "源 fiberNode"选定的 lane
       while (parent !== null) {
         parent.childLanes = mergeLanes(parent.childLanes, lane);
         alternate = parent.alternate;
