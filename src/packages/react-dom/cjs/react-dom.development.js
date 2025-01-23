@@ -19765,6 +19765,7 @@ if (process.env.NODE_ENV !== "production") {
       return [hook.memoizedState, dispatch];
     }
 
+    // 这里是第二次更新时，会调用这个方法、
     function updateReducer(reducer, initialArg, init) {
       // 拿到当前的 hook 对象，该对象可能是根据current树 hook 生成的。也可能是直接复用的。
       var hook = updateWorkInProgressHook();
@@ -19783,9 +19784,12 @@ if (process.env.NODE_ENV !== "production") {
 
       var pendingQueue = queue.pending;
 
+      // 保存到 current 上可以避免并发更新导致数据丢失
       if (pendingQueue !== null) {
         // We have new updates that haven't been processed yet.
         // We'll add them to the base queue.
+
+        // 如果不为空，将baseQueue和pendingQueue拼接起来
         if (baseQueue !== null) {
           // Merge the pending queue and the base queue.
 
@@ -19807,7 +19811,7 @@ if (process.env.NODE_ENV !== "production") {
           }
         }
 
-        // 如果 baseQueue 为空，将pendingQueue赋值给baseQueue
+        // 如果 baseQueue 为空，将pendingQueue赋值给baseQueue，相当于将pendingQueue 移到baseQueue 中
         current.baseQueue = baseQueue = pendingQueue;
         queue.pending = null;
       }
@@ -19836,10 +19840,13 @@ if (process.env.NODE_ENV !== "production") {
               next: null,
             };
 
+            // 如果 newBaseQueue === null 表示计算过程没有 update 跳过，计算出的 state 为最终 state
+         
             if (newBaseQueueLast === null) {
               newBaseQueueFirst = newBaseQueueLast = clone;
               newBaseState = newState;
             } else {
+              // 未参与计算的update 保存在baseQueue中
               newBaseQueueLast = newBaseQueueLast.next = clone;
             } // Update the remaining priority in the queue.
             // TODO: Don't need to accumulate this. Instead, we can remove
@@ -19849,6 +19856,7 @@ if (process.env.NODE_ENV !== "production") {
               currentlyRenderingFiber$1.lanes,
               updateLane
             );
+            // 标记跳过
             markSkippedUpdateLanes(updateLane);
           } else {
             // This update does have sufficient priority.
