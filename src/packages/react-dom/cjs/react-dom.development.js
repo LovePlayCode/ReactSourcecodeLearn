@@ -30220,7 +30220,7 @@ if (process.env.NODE_ENV !== "production") {
 
       var existingCallbackPriority = root.callbackPriority;
 
-      // 如果当前优先级和新的优先级一致
+      // 如果当前优先级和新的优先级一致，则复用当前任务，不需要进行调度
       if (
         existingCallbackPriority === newCallbackPriority && // Special case related to `act`. If the currently scheduled task is a
         // Scheduler task, rather than an `act` task, cancel it and re-scheduled
@@ -30719,6 +30719,7 @@ if (process.env.NODE_ENV !== "production") {
         syncNestedUpdateFlag();
       }
 
+      // 判断是否在 render 阶段 或者在 commit 阶段，如果在这两个阶段，直接抛错
       if ((executionContext & (RenderContext | CommitContext)) !== NoContext) {
         throw new Error("Should not already be working.");
       }
@@ -30726,12 +30727,14 @@ if (process.env.NODE_ENV !== "production") {
       flushPassiveEffects();
       var lanes = getNextLanes(root, NoLanes);
 
+      // 如果下一个优先级和SyncLane是不相同的，说明不可以在这里调度，直接 return 即可
       if (!includesSomeLane(lanes, SyncLane)) {
         // There's no remaining sync work left.
         ensureRootIsScheduled(root, now());
         return null;
       }
 
+      // 构建离屏的 Fiber 树
       var exitStatus = renderRootSync(root, lanes);
 
       /*KaSong*/ logHook("performSyncWorkOnRoot-exitStatus", exitStatus);
@@ -30761,6 +30764,8 @@ if (process.env.NODE_ENV !== "production") {
       var finishedWork = root.current.alternate;
       root.finishedWork = finishedWork;
       root.finishedLanes = lanes;
+
+      // 进入 commit 提交阶段
       commitRoot(root); // Before exiting, make sure there's a callback scheduled for the next
       // pending level.
 
