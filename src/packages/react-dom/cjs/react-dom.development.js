@@ -6555,7 +6555,10 @@ if (process.env.NODE_ENV !== "production") {
       root.pingedLanes |= root.suspendedLanes & pingedLanes;
       /*KaSong*/ logHook("markRootPinged", root.pingedLanes);
     }
+
+    // 重置 lanes 相关数据
     function markRootFinished(root, remainingLanes) {
+      // 分离出本次执行的 lanes
       var noLongerPendingLanes = root.pendingLanes & ~remainingLanes;
       root.pendingLanes = remainingLanes; // Let's try everything again
       // if (root.suspendedLanes || root.pingedLanes) {
@@ -19447,6 +19450,7 @@ if (process.env.NODE_ENV !== "production") {
 
       workInProgress.memoizedState = null;
       workInProgress.updateQueue = null;
+      // 重置 lanes
       workInProgress.lanes = NoLanes; // The following should have already been reset
       // currentHook = null;
       // workInProgressHook = null;
@@ -30216,6 +30220,7 @@ if (process.env.NODE_ENV !== "production") {
 
       var existingCallbackPriority = root.callbackPriority;
 
+      // 如果当前优先级和新的优先级一致
       if (
         existingCallbackPriority === newCallbackPriority && // Special case related to `act`. If the currently scheduled task is a
         // Scheduler task, rather than an `act` task, cancel it and re-scheduled
@@ -33548,6 +33553,8 @@ if (process.env.NODE_ENV !== "production") {
       this.callbackPriority = NoLane;
       this.eventTimes = createLaneMap(NoLanes);
       this.expirationTimes = createLaneMap(NoTimestamp);
+
+      // 代表 "当前 FiberRootNode"下 '未执行的更新对应的 lane'的集合。
       this.pendingLanes = NoLanes;
       this.suspendedLanes = NoLanes;
       this.pingedLanes = NoLanes;
