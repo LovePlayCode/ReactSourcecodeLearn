@@ -20497,6 +20497,7 @@ if (process.env.NODE_ENV !== "production") {
 
     var updateDebugValue = mountDebugValue;
 
+    // useCallback相关，可以直接缓存函数到memoizedState上。
     function mountCallback(callback, deps) {
       var hook = mountWorkInProgressHook();
       var nextDeps = deps === undefined ? null : deps;
@@ -20523,9 +20524,11 @@ if (process.env.NODE_ENV !== "production") {
       return callback;
     }
 
+    // 创建 useMemo 的相关映射
     function mountMemo(nextCreate, deps) {
       var hook = mountWorkInProgressHook();
       var nextDeps = deps === undefined ? null : deps;
+      // 这里需要先调用一下函数，将函数的返回值缓存到memoizedState
       var nextValue = nextCreate();
       hook.memoizedState = [nextValue, nextDeps];
       return nextValue;
@@ -20536,6 +20539,7 @@ if (process.env.NODE_ENV !== "production") {
       var nextDeps = deps === undefined ? null : deps;
       var prevState = hook.memoizedState;
 
+      // 判断前后deps 依赖是否一致，如果一致，直接返回缓存的值，如果不一致，重新计算
       if (prevState !== null) {
         // Assume these are defined. If they're not, areHookInputsEqual will warn.
         if (nextDeps !== null) {
@@ -20977,6 +20981,7 @@ if (process.env.NODE_ENV !== "production") {
         );
       };
 
+      // mount 时的dispatcher
       HooksDispatcherOnMountInDEV = {
         readContext: function (context) {
           return readContext(context);
@@ -21223,6 +21228,7 @@ if (process.env.NODE_ENV !== "production") {
         unstable_isNewReconciler: enableNewReconciler,
       };
 
+      // 更新时的dispatcher
       HooksDispatcherOnUpdateInDEV = {
         readContext: function (context) {
           return readContext(context);
@@ -22326,6 +22332,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 找到抛出 promise 的最近的 Suspense
     function getNearestSuspenseBoundaryToCapture(returnFiber) {
       var node = returnFiber;
       var hasInvisibleParentBoundary = hasSuspenseContext(
