@@ -19894,6 +19894,7 @@ if (process.env.NODE_ENV !== "production") {
         } // Mark that the fiber performed work, but only if the new state is
         // different from the current state.
 
+        // 判断计算出的结果是否跟原来的结果一致，如果一致，对didReceiveUpdate进行标记，这个变量是 bailout 优化的手段
         if (!objectIs(newState, hook.memoizedState)) {
           markWorkInProgressReceivedUpdate();
         }
@@ -20778,13 +20779,15 @@ if (process.env.NODE_ENV !== "production") {
         next: null,
       };
 
-      // 判断是否在更新阶段进行渲染
+      // 判断是否在更新阶段进行渲染,如果在render 阶段更新，会调用enqueueRenderPhaseupdate
+      // 反之会调用scheduleUpdateOnFiber开启调度
       if (isRenderPhaseUpdate(fiber)) {
         enqueueRenderPhaseUpdate(queue, update);
       } else {
         enqueueUpdate$1(fiber, queue, update);
         var alternate = fiber.alternate;
 
+        // 如果当前不存在 "待执行的更新"
         if (
           fiber.lanes === NoLanes &&
           (alternate === null || alternate.lanes === NoLanes)
@@ -20814,6 +20817,7 @@ if (process.env.NODE_ENV !== "production") {
               update.eagerState = eagerState;
 
               // 判断如果当前更新跟上一次更新一致。就跳过更新。
+              // 这里其实就是命中了eagerState策略，不会进入schedule阶段。
               if (objectIs(eagerState, currentState)) {
                 // Fast path. We can bail out without scheduling React to re-render.
                 // It's still possible that we'll need to rebase this update later,
@@ -26405,6 +26409,7 @@ if (process.env.NODE_ENV !== "production") {
 
       markSkippedUpdateLanes(workInProgress.lanes); // Check if the children have any pending work.
 
+      // 跳过孩子更新
       if (!includesSomeLane(renderLanes, workInProgress.childLanes)) {
         // The children don't have any work either. We can skip them.
         // TODO: Once we add back resuming, we should check if the children are
@@ -26416,6 +26421,8 @@ if (process.env.NODE_ENV !== "production") {
       } // This fiber doesn't have work, but its subtree does. Clone the child
       // fibers and continue.
 
+      // 当前节点没有需要做的工作，但是子树有需要更新的操作，所以需要克隆当前节点，返回当前节点的子节点。
+      // 因为当前节点可能粒度太大了，返回子节点的话还可以继续判断，可能存在更小粒度的更新可以跳过。
       cloneChildFibers(current, workInProgress);
       /*KaSong*/ logHook(
         "bailoutOnAlreadyFinishedWork",
@@ -26695,6 +26702,7 @@ if (process.env.NODE_ENV !== "production") {
         }
       }
 
+      // 进入 bailout 优化策略
       return bailoutOnAlreadyFinishedWork(current, workInProgress, renderLanes);
     }
 
@@ -26736,9 +26744,13 @@ if (process.env.NODE_ENV !== "production") {
           // If props or context changed, mark the fiber as having performed work.
           // This may be unset if the props are determined to be equal later (memo).
           didReceiveUpdate = true;
+          // 如果oldProps 和 newProps 是相同的
+          // 上下文相同
+          // fiberNode.type没有变化，比如没有从DIV变为 UL
         } else {
           // Neither props nor legacy context changes. Check if there's a pending
           // update or context change.
+          // 检查当前fiberNode是否存在更新，如果不存在更新
           var hasScheduledUpdateOrContext = checkScheduledUpdateOrContext(
             current,
             renderLanes
@@ -26751,6 +26763,7 @@ if (process.env.NODE_ENV !== "production") {
           ) {
             // No pending updates or context. Bail out now.
             didReceiveUpdate = false;
+            // 进入bailout 策略
             return attemptEarlyBailoutIfNoScheduledUpdate(
               current,
               workInProgress,
