@@ -10493,6 +10493,7 @@ if (process.env.NODE_ENV !== "production") {
     function listenToAllSupportedEvents(rootContainerElement) {
       if (!rootContainerElement[listeningMarker]) {
         rootContainerElement[listeningMarker] = true;
+        debugger;
         allNativeEvents.forEach(function (domEventName) {
           // We handle selectionchange separately because it
           // doesn't bubble and needs to be on the document.
@@ -19841,7 +19842,7 @@ if (process.env.NODE_ENV !== "production") {
             };
 
             // 如果 newBaseQueue === null 表示计算过程没有 update 跳过，计算出的 state 为最终 state
-         
+
             if (newBaseQueueLast === null) {
               newBaseQueueFirst = newBaseQueueLast = clone;
               newBaseState = newState;
