@@ -6147,14 +6147,17 @@ if (process.env.NODE_ENV !== "production") {
       var pingedLanes = root.pingedLanes; // Do not work on any idle work until all the non-idle work has finished,
       // even if the work is suspended.
 
+      // 获取非空闲的 lanes  pendingLanes & NonIdleLanes; 将空闲任务从pendingLanes中分离出去
       var nonIdlePendingLanes = pendingLanes & NonIdleLanes;
 
       if (nonIdlePendingLanes !== NoLanes) {
+        // 除去挂起的任务
         var nonIdleUnblockedLanes = nonIdlePendingLanes & ~suspendedLanes;
 
         if (nonIdleUnblockedLanes !== NoLanes) {
           nextLanes = getHighestPriorityLanes(nonIdleUnblockedLanes);
         } else {
+          // 如果nonIdlePingedLanes为空，则从挂起的优先级中选择最高的优先级。  pingedLanes：由于请求成功，取消挂起的 update 对应的 lane。
           var nonIdlePingedLanes = nonIdlePendingLanes & pingedLanes;
 
           if (nonIdlePingedLanes !== NoLanes) {
@@ -6163,6 +6166,7 @@ if (process.env.NODE_ENV !== "production") {
         }
       } else {
         // The only remaining work is Idle.
+        // 从闲置的任务中继续上诉逻辑。
         var unblockedLanes = pendingLanes & ~suspendedLanes;
 
         if (unblockedLanes !== NoLanes) {
@@ -6340,9 +6344,8 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
-    // 根据 "交互发生的时间" 为 lanes 设置过期时间
+    // 根据 "交互发生的时间" 为 lanes 设置过期时间(解决饥饿问题)
     function markStarvedLanesAsExpired(root, currentTime) {
-      debugger;
       // TODO: This gets called every time we yield. We can optimize by storing
       // the earliest expiration time on the root. Then use that to quickly bail out
       // of this function.
@@ -10493,7 +10496,7 @@ if (process.env.NODE_ENV !== "production") {
     function listenToAllSupportedEvents(rootContainerElement) {
       if (!rootContainerElement[listeningMarker]) {
         rootContainerElement[listeningMarker] = true;
-        debugger;
+
         allNativeEvents.forEach(function (domEventName) {
           // We handle selectionchange separately because it
           // doesn't bubble and needs to be on the document.
@@ -29977,7 +29980,6 @@ if (process.env.NODE_ENV !== "production") {
       return currentEventTime;
     }
     function requestUpdateLane(fiber) {
-      debugger;
       // Special cases
       var mode = fiber.mode;
 

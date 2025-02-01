@@ -18,8 +18,8 @@ import "./globalLog";
 // import App from "./demo/Demo2";
 // import App from "./demo/DemoUseContext/index";
 // import App from './demo/TransitionDemo/demo3';
-import App from './demo/EventDemo/index'
-
+// import App from './demo/EventDemo/index'
+import App from "./demo/lanesDemo/index";
 
 const rootEle = document.getElementById("root");
 
