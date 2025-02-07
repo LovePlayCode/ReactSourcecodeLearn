@@ -19779,6 +19779,7 @@ if (process.env.NODE_ENV !== "production") {
       // 拿到当前的 hook 对象，该对象可能是根据current树 hook 生成的。也可能是直接复用的。
       // 如果在触发更新后，因为要生成新的离屏树，所以此时memoizedState是没值，只能从当前 current 进行复用
       var hook = updateWorkInProgressHook();
+      debugger;
       var queue = hook.queue;
 
       if (queue === null) {
