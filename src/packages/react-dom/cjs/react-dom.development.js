@@ -19647,6 +19647,8 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     function mountWorkInProgressHook() {
+      // 拥有自己的状态和自己的更新队列。 连接到FiberNode属性memoizedState上。
+      // 无论是状态Hook还是副作用 Hook，都按照调用顺序存储在 fiber.
       var hook = {
         memoizedState: null,
         baseState: null,
@@ -19675,6 +19677,7 @@ if (process.env.NODE_ENV !== "production") {
       var nextCurrentHook;
 
       if (currentHook === null) {
+        // 当前页面使用的结构
         var current = currentlyRenderingFiber$1.alternate;
 
         if (current !== null) {
@@ -19683,6 +19686,7 @@ if (process.env.NODE_ENV !== "production") {
           nextCurrentHook = null;
         }
       } else {
+        // 直接处理下一个节点
         nextCurrentHook = currentHook.next;
       }
 
@@ -19708,6 +19712,7 @@ if (process.env.NODE_ENV !== "production") {
         }
 
         currentHook = nextCurrentHook;
+        // 创建一个新的任务，然后绑定到当前的渲染树上。
         var newHook = {
           memoizedState: currentHook.memoizedState,
           baseState: currentHook.baseState,
@@ -19772,6 +19777,7 @@ if (process.env.NODE_ENV !== "production") {
     // 这里是第二次更新时，会调用这个方法、
     function updateReducer(reducer, initialArg, init) {
       // 拿到当前的 hook 对象，该对象可能是根据current树 hook 生成的。也可能是直接复用的。
+      // 如果在触发更新后，因为要生成新的离屏树，所以此时memoizedState是没值，只能从当前 current 进行复用
       var hook = updateWorkInProgressHook();
       var queue = hook.queue;
 
@@ -20844,6 +20850,7 @@ if (process.env.NODE_ENV !== "production") {
         }
 
         var eventTime = requestEventTime();
+        // 开启调度。
         var root = scheduleUpdateOnFiber(fiber, lane, eventTime);
 
         if (root !== null) {
@@ -20985,7 +20992,7 @@ if (process.env.NODE_ENV !== "production") {
         );
       };
 
-      // mount 时的dispatcher
+      // mount 时的dispatcher,和 react 包连接起来
       HooksDispatcherOnMountInDEV = {
         readContext: function (context) {
           return readContext(context);

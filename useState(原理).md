@@ -18,7 +18,7 @@ function resolveDispatcher() {
   {
     if (dispatcher === null) {
       error(
-        "Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for" +
+        "Invalid hook call. Hooks **can** only be called inside of the body of a function component. This could happen for" +
           " one of the following reasons:\n" +
           "1. You might have mismatching versions of React and the renderer (such as React DOM)\n" +
           "2. You might be breaking the Rules of Hooks\n" +
@@ -54,8 +54,8 @@ function resolveDispatcher() {
 }
 ```
 
-这个函数的作用是生成 hook，并把 hook 挂载到 workInProgressFiber 节点上
-
+这个函数的作用是生成 hook，并把 hook 挂载到 workInProgressFiber 节点的memoizedState属性上
+****
 ```js
 function mountWorkInProgressHook() {
   var hook = {
@@ -354,3 +354,4 @@ function updateReducer(reducer, initialArg, init) {
 ![alt text](image-6.png)
 
 可以看到 Fiber 通过 memoizedState 对 hook 对象进行了连接，hook 对象内部有一个 memoizedState 指向 useEffet 生成的副作用函数或计算出的 state
+![alt text](image-8.png)
