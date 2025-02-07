@@ -255,12 +255,14 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // Scheduler的 workLoop，需要循环调用，控制所有任务的调度。
     function workLoop(hasTimeRemaining, initialTime) {
       var currentTime = initialTime;
       advanceTimers(currentTime);
       currentTask = peek(taskQueue);
 
       while (currentTask !== null && !enableSchedulerDebugging) {
+        // 这里也有时间分片的机制
         if (
           currentTask.expirationTime > currentTime &&
           (!hasTimeRemaining || shouldYieldToHost())
@@ -415,7 +417,10 @@ if (process.env.NODE_ENV !== "production") {
           break;
       }
 
+      // 生成一个截止时间
       var expirationTime = startTime + timeout;
+
+      // 生成一个任务对象
       var newTask = {
         id: taskIdCounter++,
         callback: callback,
@@ -537,6 +542,7 @@ if (process.env.NODE_ENV !== "production") {
         var hasMoreWork = true;
 
         try {
+          debugger;
           hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
         } finally {
           if (hasMoreWork) {

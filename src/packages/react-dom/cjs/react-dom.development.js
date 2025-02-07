@@ -28494,7 +28494,6 @@ if (process.env.NODE_ENV !== "production") {
     }
 
     function commitPlacement(finishedWork) {
-      debugger;
       var parentFiber = getHostParentFiber(finishedWork); // Note: these two variables *must* always be updated together.
 
       var parent;
@@ -30252,6 +30251,7 @@ if (process.env.NODE_ENV !== "production") {
       var existingCallbackPriority = root.callbackPriority;
 
       // 如果当前优先级和新的优先级一致，则复用当前任务，不需要进行调度
+      // 批量更新的基础
       if (
         existingCallbackPriority === newCallbackPriority && // Special case related to `act`. If the currently scheduled task is a
         // Scheduler task, rather than an `act` task, cancel it and re-scheduled
@@ -30286,6 +30286,7 @@ if (process.env.NODE_ENV !== "production") {
 
       var newCallbackNode;
 
+      // 属于同步渲染，该模式下不可中断。
       if (newCallbackPriority === SyncLane) {
         // Special case: Sync React callbacks are scheduled on a special
         // internal queue
@@ -30358,6 +30359,7 @@ if (process.env.NODE_ENV !== "production") {
         );
         newCallbackNode = scheduleCallback$1(
           schedulerPriorityLevel,
+          // 真正执行生成离屏树的地方
           performConcurrentWorkOnRoot.bind(null, root)
         );
       }
@@ -31262,6 +31264,10 @@ if (process.env.NODE_ENV !== "production") {
     }
     /** @noinline */
 
+    /**
+     * reconciler的运行流程，也有一个workLoop用于控制 Fiber 树的构造。
+     * fiber构造循环是任务调度循环中任务的一部分，它们是从属关系，每个任务都会重新构造一个 fiber 树。
+     */
     function workLoopConcurrent() {
       // Perform work until Scheduler asks us to yield
       // 对时间进行调度，每次走完之后需要判断是否有剩余时间
