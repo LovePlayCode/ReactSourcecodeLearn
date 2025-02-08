@@ -19746,6 +19746,7 @@ if (process.env.NODE_ENV !== "production") {
       return typeof action === "function" ? action(state) : action;
     }
 
+    // 初始化useReducer调用的方法
     function mountReducer(reducer, initialArg, init) {
       var hook = mountWorkInProgressHook();
       var initialState;
@@ -19756,12 +19757,14 @@ if (process.env.NODE_ENV !== "production") {
         initialState = initialArg;
       }
 
+      // 状态初始化
       hook.memoizedState = hook.baseState = initialState;
       var queue = {
         pending: null,
         interleaved: null,
         lanes: NoLanes,
         dispatch: null,
+        // lastRendered调用的是reducer相关方法，是用户传入的方法。
         lastRenderedReducer: reducer,
         lastRenderedState: initialState,
       };
@@ -20250,6 +20253,8 @@ if (process.env.NODE_ENV !== "production") {
       }
 
       hook.memoizedState = hook.baseState = initialState;
+
+      // mountState 使用的是内置的basicStateReducer
       var queue = {
         pending: null,
         interleaved: null,
