@@ -19782,7 +19782,6 @@ if (process.env.NODE_ENV !== "production") {
       // 拿到当前的 hook 对象，该对象可能是根据current树 hook 生成的。也可能是直接复用的。
       // 如果在触发更新后，因为要生成新的离屏树，所以此时memoizedState是没值，只能从当前 current 进行复用
       var hook = updateWorkInProgressHook();
-      debugger;
       var queue = hook.queue;
 
       if (queue === null) {
@@ -19842,6 +19841,7 @@ if (process.env.NODE_ENV !== "production") {
         do {
           var updateLane = update.lane;
 
+          // 判断优先级，如果优先级不够,跳过更新、
           if (!isSubsetOfLanes(renderLanes, updateLane)) {
             // Priority is insufficient. Skip this update. If this is the first
             // skipped update, the previous update/state is the new base
@@ -20777,6 +20777,7 @@ if (process.env.NODE_ENV !== "production") {
       markUpdateInDevTools(fiber, lane);
     }
 
+    // 触发更新的函数
     function dispatchSetState(fiber, queue, action) {
       {
         if (typeof arguments[3] === "function") {
