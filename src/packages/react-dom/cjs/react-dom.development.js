@@ -29473,6 +29473,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 调用useEffect的入口
     function commitPassiveMountOnFiber(finishedRoot, finishedWork) {
       switch (finishedWork.tag) {
         case FunctionComponent:
@@ -31736,6 +31737,7 @@ if (process.env.NODE_ENV !== "production") {
       return null;
     }
 
+    // 调用useEffet(宏任务异步)
     function flushPassiveEffects() {
       // Returns whether passive effects were flushed.
       // TODO: Combine this check with the one in flushPassiveEFfectsImpl. We should
