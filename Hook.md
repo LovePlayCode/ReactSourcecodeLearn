@@ -1,0 +1,41 @@
+# 引入 Hook 的动机
+
+在组件之间复用状态逻辑很难，复杂组件变得难以理解。比如难以理解的 class。为了解决这些实际开发痛点，引入了 Hook。
+
+Hook 对象
+
+```js
+var newHook = {
+  memoizedState: currentHook.memoizedState,
+  baseState: currentHook.baseState,
+  baseQueue: currentHook.baseQueue,
+  queue: currentHook.queue,
+  next: null,
+};
+```
+
+Queue 对象
+
+```js
+var queue = {
+  pending: null,
+  interleaved: null,
+  lanes: NoLanes,
+  dispatch: null,
+  // lastRendered调用的是reducer相关方法，是用户传入的方法。
+  lastRenderedReducer: reducer,
+  lastRenderedState: initialState,
+};
+```
+
+Update 对象
+
+```js
+var update = {
+  lane: lane,
+  action: action,
+  hasEagerState: false,
+  eagerState: null,
+  next: null,
+};
+```
