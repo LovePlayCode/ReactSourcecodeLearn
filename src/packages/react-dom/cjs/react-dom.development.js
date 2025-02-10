@@ -32974,9 +32974,14 @@ if (process.env.NODE_ENV !== "production") {
       this.sibling = null;
       this.index = 0;
       this.ref = null;
+      // 输入属性，从 ReactElement对象传入的 props，和fiber.memoizedProps比较可以得出属性是否变动。
       this.pendingProps = pendingProps;
+      // 上一次生成子节点用到的属性，生成子节点后保持在内存中。
       this.memoizedProps = null;
+      // 存储update更新对象的队列，每一次发起更新，都需要在队列上创建。
+      // useState跟这个没关系
       this.updateQueue = null;
+      // 保存在内存中的局部状态
       this.memoizedState = null;
       this.dependencies = null;
       this.mode = mode; // Effects
