@@ -20355,6 +20355,8 @@ if (process.env.NODE_ENV !== "production") {
         if (nextDeps !== null) {
           var prevDeps = prevEffect.deps;
 
+          // 比较依赖是否有变化，这里可以看到，如果不写依赖数组，直接走到下面了，
+          // 相当于所有 state 更新，都会运行useEffect
           if (areHookInputsEqual(nextDeps, prevDeps)) {
             hook.memoizedState = pushEffect(
               hookFlags,
@@ -31538,7 +31540,6 @@ if (process.env.NODE_ENV !== "production") {
             flushPassiveEffects(); // This render triggered passive effects: release the root cache pool
             // *after* passive effects fire to avoid freeing a cache pool that may
             // be referenced by a node in the tree (HostRoot, Cache boundary etc)
-
             return null;
           });
         }

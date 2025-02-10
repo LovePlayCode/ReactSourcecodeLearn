@@ -2,10 +2,10 @@
 
 在组件之间复用状态逻辑很难，复杂组件变得难以理解。比如难以理解的 class。为了解决这些实际开发痛点，引入了 Hook。
 
-Hook分为状态 Hook(useState,useReducer) 和副作用 Hook(useEffect)
+Hook 分为状态 Hook(useState,useReducer) 和副作用 Hook(useEffect)
 
 1. 状态 Hook: 实现了状态持久化
-2. 副作用 Hook: 维护fiber.flags,并提供副作用回调。
+2. 副作用 Hook: 维护 fiber.flags,并提供副作用回调。
 
 Hook 对象
 
@@ -41,6 +41,19 @@ var update = {
   action: action,
   hasEagerState: false,
   eagerState: null,
+  next: null,
+};
+```
+
+副作用相关对象
+
+```js
+var effect = {
+  tag: tag,
+  create: create,
+  destroy: destroy,
+  deps: deps,
+  // Circular
   next: null,
 };
 ```
