@@ -20285,6 +20285,13 @@ if (process.env.NODE_ENV !== "production") {
 
     function pushEffect(tag, create, destroy, deps) {
       var effect = {
+        // 代表 effect 的类型
+        /**
+         * NoFlags
+         * HasEffect
+         * Layout
+         * Passive
+         */
         tag: tag,
         create: create,
         destroy: destroy,
@@ -20378,6 +20385,9 @@ if (process.env.NODE_ENV !== "production") {
       );
     }
 
+    /**
+     * 创建useEffect的地方
+     */
     function mountEffect(create, deps) {
       if ((currentlyRenderingFiber$1.mode & StrictEffectsMode) !== NoMode) {
         return mountEffectImpl(
@@ -20408,6 +20418,9 @@ if (process.env.NODE_ENV !== "production") {
       return updateEffectImpl(Update, Insertion, create, deps);
     }
 
+    /**
+     * 初始化useLayoutEffect的地方
+     */
     function mountLayoutEffect(create, deps) {
       var fiberFlags = Update;
 
@@ -27564,6 +27577,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 执行副作用的地方(useEffect和useLayout)
     function commitHookEffectListMount(flags, finishedWork) {
       var updateQueue = finishedWork.updateQueue;
       var lastEffect = updateQueue !== null ? updateQueue.lastEffect : null;
