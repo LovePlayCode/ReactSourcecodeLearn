@@ -19650,7 +19650,9 @@ if (process.env.NODE_ENV !== "production") {
       // 拥有自己的状态和自己的更新队列。 连接到FiberNode属性memoizedState上。
       // 无论是状态Hook还是副作用 Hook，都按照调用顺序存储在 fiber.
       var hook = {
+        //当前状态
         memoizedState: null,
+        // 基础状态
         baseState: null,
         baseQueue: null,
         queue: null,
@@ -19760,6 +19762,7 @@ if (process.env.NODE_ENV !== "production") {
       // 状态初始化
       hook.memoizedState = hook.baseState = initialState;
       var queue = {
+        // 添加 update 对象的地方。
         pending: null,
         interleaved: null,
         lanes: NoLanes,
