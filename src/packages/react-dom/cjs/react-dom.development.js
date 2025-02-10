@@ -32986,6 +32986,7 @@ if (process.env.NODE_ENV !== "production") {
       this.dependencies = null;
       this.mode = mode; // Effects
 
+      // 表明该 fiber 节点有副作用
       this.flags = NoFlags;
       this.subtreeFlags = NoFlags;
       this.deletions = null;
