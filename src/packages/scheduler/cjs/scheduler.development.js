@@ -545,7 +545,6 @@ if (process.env.NODE_ENV !== "production") {
         var hasMoreWork = true;
 
         try {
-          debugger;
           hasMoreWork = scheduledHostCallback(hasTimeRemaining, currentTime);
         } finally {
           if (hasMoreWork) {

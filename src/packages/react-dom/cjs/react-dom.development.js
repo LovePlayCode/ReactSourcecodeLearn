@@ -30468,6 +30468,8 @@ if (process.env.NODE_ENV !== "production") {
 
       /*KaSong*/ logHook("performConcurrentWorkOnRoot-exitStatus", exitStatus);
 
+      // 可以看到这里，如果exitStatus处于未完成的情况，启动了下一轮的调度，继续构建树。
+      // 所以不会出现构建一半的树出现在页面上的情况。因为没走到 commit 阶段
       if (exitStatus !== RootIncomplete) {
         if (exitStatus === RootErrored) {
           // If something threw an error, try rendering one more time. We'll
@@ -31279,6 +31281,7 @@ if (process.env.NODE_ENV !== "production") {
       popDispatcher(prevDispatcher);
       executionContext = prevExecutionContext;
 
+      // 说明没有渲染完成，返回正在渲染的标记
       if (workInProgress !== null) {
         // Still work remaining.
         {

@@ -19,8 +19,8 @@ import "./globalLog";
 // import App from "./demo/DemoUseContext/index";
 // import App from './demo/TransitionDemo/demo3';
 // import App from './demo/EventDemo/index'
-import App from "./demo/lanesDemo/index";
-
+// import App from "./demo/lanesDemo/index";
+import App from "./demo/interruptDemo/index";
 const rootEle = document.getElementById("root");
 
 // import './demo/MiniUpdate2State';
