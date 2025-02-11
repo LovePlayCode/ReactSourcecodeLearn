@@ -263,6 +263,7 @@ if (process.env.NODE_ENV !== "production") {
 
       while (currentTask !== null && !enableSchedulerDebugging) {
         // 这里也有时间分片的机制
+        // 每一次具体执行 task.callback之前都要进行超时检测，如果超时可以立即退出循环并等待下一次调用
         if (
           currentTask.expirationTime > currentTime &&
           (!hasTimeRemaining || shouldYieldToHost())
@@ -426,10 +427,12 @@ if (process.env.NODE_ENV !== "production") {
         callback: callback,
         priorityLevel: priorityLevel,
         startTime: startTime,
+        // 过期时间
         expirationTime: expirationTime,
         sortIndex: -1,
       };
 
+      // 如果任务开始时间大于当前时间，说明是一个延迟任务，直接 push 到延迟任务队列中
       if (startTime > currentTime) {
         // This is a delayed task.
         newTask.sortIndex = startTime;

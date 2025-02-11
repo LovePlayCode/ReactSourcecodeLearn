@@ -30092,6 +30092,7 @@ if (process.env.NODE_ENV !== "production") {
       return claimNextRetryLane();
     }
 
+    // 只要涉及到需要改变 fiber的操作(无论是首次渲染或后续更新)最后都会间接调用scheduleUpdateOnFiber
     function scheduleUpdateOnFiber(fiber, lane, eventTime) {
       checkForNestedUpdates();
 
@@ -31229,6 +31230,7 @@ if (process.env.NODE_ENV !== "production") {
       }
     }
 
+    // 并发渲染的地方
     function renderRootConcurrent(root, lanes) {
       /*KaSong*/ logHook("renderRootConcurrent", root, lanes);
       var prevExecutionContext = executionContext;
