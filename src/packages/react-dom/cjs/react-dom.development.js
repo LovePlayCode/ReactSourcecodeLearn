@@ -30325,6 +30325,7 @@ if (process.env.NODE_ENV !== "production") {
       if (newCallbackPriority === SyncLane) {
         // Special case: Sync React callbacks are scheduled on a special
         // internal queue
+        debugger;
         if (root.tag === LegacyRoot) {
           if (ReactCurrentActQueue$1.isBatchingLegacy !== null) {
             ReactCurrentActQueue$1.didScheduleLegacyUpdate = true;
