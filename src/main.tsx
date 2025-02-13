@@ -9,9 +9,9 @@ import "./globalLog";
 // import App from './demo/testDemo';
 // import App from './demo/bailoutDemo';
 // import App from './demo/ContextDemo';
-// import App from './demo/BailoutDemo/step1';
+import App from "./demo/BailoutDemo/step1";
 // import App from "./demo/DiffDemo/v3";
-// import App from './demo/Performance/demo2';
+// import App from "./demo/Performance/demo2";
 // import App from "./demo/ErrorCatchDemo";
 // import App from "./demo/insertDemo/index";
 // import App from "./demo/classDemo/index";
@@ -19,7 +19,8 @@ import "./globalLog";
 // import App from "./demo/DemoUseContext/index";
 // import App from './demo/TransitionDemo/demo3';
 // import App from './demo/EventDemo/index'
-import App from "./demo/lanesDemo/index";
+// import App from "./demo/lanesDemo/index";
+
 // import App from "./demo/interruptDemo/index";
 const rootEle = document.getElementById("root");
 

@@ -24245,6 +24245,7 @@ if (process.env.NODE_ENV !== "production") {
         markComponentRenderStopped();
       }
 
+      // 命中bailout策略的地方
       if (current !== null && !didReceiveUpdate) {
         bailoutHooks(current, workInProgress, renderLanes);
         return bailoutOnAlreadyFinishedWork(
@@ -26755,7 +26756,6 @@ if (process.env.NODE_ENV !== "production") {
      * @param {*} renderLanes
      */
     function beginWork(current, workInProgress, renderLanes) {
-      console.log("beginWork==", current, workInProgress);
       {
         if (workInProgress._debugNeedsRemount && current !== null) {
           // This will restart the begin phase with a new fiber.
@@ -26774,7 +26774,7 @@ if (process.env.NODE_ENV !== "production") {
         }
       }
       /*KaSong*/ logHook("beginWork", current, workInProgress);
-
+      debugger;
       if (current !== null) {
         var oldProps = current.memoizedProps;
         var newProps = workInProgress.pendingProps;
