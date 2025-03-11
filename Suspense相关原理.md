@@ -238,3 +238,10 @@ if ((completedWork.flags & Incomplete) === NoFlags) {
 11. 找到符合条件的Suspense节点，直接 return。
 13. 此时 Suspense 会再走一遍 beginWork，然后根据上面的三个 if，会走到第一个，展示 fallback UI 状态。
 14. 当 Promise 状态变化后，会启动调度展示正确的 UI。
+
+# QA
+1. 如果使用Suspense会走几次beginWork。
+答： 
+1. mount时的beginWork，返回"Offscreen"对应的"fiberNode"。
+2. 由于unwind流程，第二次进入mount时的beginWork，返回"fallback Fragment"对应fiberNode
+3. Promise从待定状态变为其他状态会触发调度更新，从而进入update的 beginwork。
