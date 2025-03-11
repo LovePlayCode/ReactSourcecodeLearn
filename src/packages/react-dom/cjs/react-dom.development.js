@@ -22275,6 +22275,9 @@ if (process.env.NODE_ENV !== "production") {
       return update;
     }
 
+    /**
+     * 给期约状态附加了Listener
+     */
     function attachWakeableListeners(suspenseBoundary, root, wakeable, lanes) {
       // Attach a ping listener
       //
@@ -22319,6 +22322,7 @@ if (process.env.NODE_ENV !== "production") {
             }
           }
 
+          // 给待定状态的期约绑定回调，在期约状态发生改变后会触发新一轮的调度从而展示最新的 view。
           wakeable.then(ping, ping);
         }
       } // Retry listener
@@ -22520,7 +22524,7 @@ if (process.env.NODE_ENV !== "production") {
         }
       }
 
-      // 判断是错误还是Promise
+      // 判断是错误还是Promise，如果是 Promise，本质上是一个对象，然后 then 是一个方法
       if (
         value !== null &&
         typeof value === "object" &&
@@ -22541,6 +22545,8 @@ if (process.env.NODE_ENV !== "production") {
             root,
             rootRenderLanes
           );
+
+          // 给当前期约状态附加Listener
           attachWakeableListeners(
             suspenseBoundary,
             root,
@@ -31964,6 +31970,10 @@ if (process.env.NODE_ENV !== "production") {
         );
       }
     }
+
+    /**
+     * Suspense中当期约从待定状态变为解决状态的处理。
+     */
     function pingSuspendedRoot(root, wakeable, pingedLanes) {
       var pingCache = root.pingCache;
 
@@ -32006,6 +32016,7 @@ if (process.env.NODE_ENV !== "production") {
         }
       }
 
+      // 开启新一轮的调度
       ensureRootIsScheduled(root, eventTime);
     }
 
