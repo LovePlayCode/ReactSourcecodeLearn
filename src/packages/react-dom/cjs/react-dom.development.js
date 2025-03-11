@@ -25157,6 +25157,9 @@ if (process.env.NODE_ENV !== "production") {
       return removeLanes(current.childLanes, renderLanes);
     }
 
+    /**
+     * 着重处理 Suspense 相关逻辑，内部会维护两套不同的状态
+     */
     function updateSuspenseComponent(current, workInProgress, renderLanes) {
       var nextProps = workInProgress.pendingProps; // This is used by DevTools to force a boundary to suspend.
 
