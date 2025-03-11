@@ -5,6 +5,7 @@ function useState(initialState) {
   var dispatcher = resolveDispatcher();
   return dispatcher.useState(initialState);
 }
+
 ```
 
 1. 调用 resolveDispatcher 生成一个 dispatcher 实例;从下面的源码可以看出其实就是取了 ReactCurrentDispatcher.current 进行了一个赋值。
